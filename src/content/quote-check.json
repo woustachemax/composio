@@ -1,0 +1,788 @@
+{
+  "ranAt": "2026-10-19",
+  "summary": {
+    "found": 76,
+    "not-found": 0,
+    "unreachable": 0
+  },
+  "rows": [
+    {
+      "guide": "github",
+      "claim": "Requirement: No business verification unless you sell on Marketplace",
+      "quote": "OAuth apps should have a minimum of 200 users.",
+      "sources": [
+        "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "github",
+      "claim": "Requirement: Privacy policy only for Marketplace",
+      "quote": "Listings must have a valid link to a privacy policy.",
+      "sources": [
+        "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+        "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "github",
+      "claim": "Requirement: Org owners may need to approve your app",
+      "quote": "When you create a new organization, OAuth app access restrictions are enabled by default.",
+      "sources": [
+        "https://docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions",
+        "https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/authorizing-oauth-apps"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "github",
+      "claim": "Requirement: Scopes are coarse, and users can reduce them",
+      "quote": "Currently, you can't scope source code access to read-only.",
+      "sources": [
+        "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps",
+        "https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/authorizing-oauth-apps"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "github",
+      "claim": "Requirement: Access tokens expire after 8 hours by default",
+      "quote": "The access token expires after eight hours, and the refresh token expires after six months without use.",
+      "sources": [
+        "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+        "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Summary: Difficulty",
+      "quote": "If you store restricted scope data on servers (or transmit), then you must go through a security assessment.",
+      "sources": [
+        "https://developers.google.com/workspace/gmail/api/auth/scopes",
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification",
+        "https://support.google.com/cloud/answer/13464321"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Composio: Composio setup",
+      "quote": "By default, the consent screen uses Composio's OAuth app.",
+      "sources": [
+        "https://docs.composio.dev/toolkits/managed-auth",
+        "https://docs.composio.dev/docs/auth-configuration/custom-auth-configs",
+        "https://docs.composio.dev/toolkits/gmail",
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/google-workspace"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "App type: Internal or External user type?",
+      "quote": "Your app will not be subject to the unverified app screen or the 100-user cap if it's designated as internal-only.",
+      "sources": [
+        "https://support.google.com/cloud/answer/15549945",
+        "https://support.google.com/cloud/answer/13464323",
+        "https://support.google.com/cloud/answer/13463817",
+        "https://support.google.com/a/answer/7281227"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Most Gmail scopes are restricted",
+      "quote": "https://mail.google.com/ (includes any usage of IMAP, SMTP, and POP3 protocols)",
+      "sources": [
+        "https://developers.google.com/workspace/gmail/api/auth/scopes",
+        "https://support.google.com/cloud/answer/13464325"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Annual CASA security assessment for restricted scopes",
+      "quote": "apps must be reverified for compliance and complete a security assessment at least every 12 months after your assessor's Letter of Assessment (LOA) approval date.",
+      "sources": [
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification",
+        "https://support.google.com/cloud/answer/13465431",
+        "https://developers.google.com/workspace/gmail/api/auth/scopes"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: CASA tier depends on risk and user count",
+      "quote": "Applications are assigned to either the AL1 or AL2 assurance level.",
+      "sources": [
+        "https://support.google.com/cloud/answer/13465431",
+        "https://support.google.com/cloud/answer/13463817"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Brand verification before data access review",
+      "quote": "In some cases, where a result cannot be automatically determined, your app may undergo a manual review process that usually takes 2-3 business days.",
+      "sources": [
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification",
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Verify your domains in Google Search Console",
+      "quote": "We can't approve your OAuth verification request until your site ownership verification is complete.",
+      "sources": [
+        "https://support.google.com/cloud/answer/13464321",
+        "https://support.google.com/cloud/answer/7454865"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Public homepage and privacy policy on your domain",
+      "quote": "The homepage must be hosted on a verified domain you own",
+      "sources": [
+        "https://support.google.com/cloud/answer/13464321",
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Unlisted YouTube demo video",
+      "quote": "If your app is a task automation platform, your demonstration video must showcase how multiple API workflows are created and automated, and in which directions user data flows.",
+      "sources": [
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification",
+        "https://support.google.com/cloud/answer/13464321"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Justify every scope; narrower ones must not work",
+      "quote": "using the broad access https://mail.google.com/ scope just for sending emails with the SMTP protocol violates the minimum scope policy.",
+      "sources": [
+        "https://support.google.com/cloud/answer/13464321",
+        "https://support.google.com/cloud/answer/13463817",
+        "https://developers.google.com/workspace/gmail/api/auth/scopes"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Gmail access only for approved use cases, no model training",
+      "quote": "Transferring, selling, or using user data to create, train, or improve a machine learning or artificial intelligence model beyond that specific user’s personalized model for the appropriate use case or user-facing feature.",
+      "sources": [
+        "https://developers.google.com/workspace/workspace-api-user-data-developer-policy",
+        "https://support.google.com/cloud/answer/13464321",
+        "https://support.google.com/cloud/answer/13463817"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Testing mode: 100 test users, 7-day authorizations",
+      "quote": "Authorizations by a test user will expire seven days from the time of consent.",
+      "sources": [
+        "https://support.google.com/cloud/answer/15549945",
+        "https://developers.google.com/identity/protocols/oauth2"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Unverified apps: warning screen and a lifetime 100-user cap",
+      "quote": "The user cap applies over the entire lifetime of the project, and it cannot be reset or changed.",
+      "sources": [
+        "https://support.google.com/cloud/answer/15549945",
+        "https://support.google.com/cloud/answer/13463817",
+        "https://support.google.com/cloud/answer/7454865"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Workspace admins can block or restrict your app",
+      "quote": "If you change access to Restricted, any previously installed apps that you haven't trusted stop working, and tokens are revoked.",
+      "sources": [
+        "https://support.google.com/a/answer/7281227",
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/google-workspace",
+        "https://developers.google.com/identity/protocols/oauth2"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Redirect URI must match exactly; HTTPS only, no wildcards",
+      "quote": "Note that the http or https scheme, case, and trailing slash ('/') must all match.",
+      "sources": [
+        "https://developers.google.com/identity/protocols/oauth2/web-server",
+        "https://support.google.com/cloud/answer/15549257",
+        "https://support.google.com/cloud/answer/7454865"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: 100 refresh tokens per account per client",
+      "quote": "There is currently a limit of 100 refresh tokens per Google Account per OAuth 2.0 client ID.",
+      "sources": [
+        "https://developers.google.com/identity/protocols/oauth2"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Password changes kill Gmail refresh tokens",
+      "quote": "The user changed passwords and the refresh token contains Gmail scopes.",
+      "sources": [
+        "https://developers.google.com/identity/protocols/oauth2"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Requirement: Unused OAuth clients are deleted after six months",
+      "quote": "OAuth 2.0 clients that have been inactive for six months are automatically deleted.",
+      "sources": [
+        "https://support.google.com/cloud/answer/15549257",
+        "https://developers.google.com/identity/protocols/oauth2/policies"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Step: Create a Web application OAuth client",
+      "quote": "Your application's client secret will only be shown after you create the client.",
+      "sources": [
+        "https://support.google.com/cloud/answer/15549257",
+        "https://developers.google.com/identity/protocols/oauth2/web-server",
+        "https://docs.composio.dev/docs/auth-configuration/custom-auth-configs"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Step: Submit data access verification",
+      "quote": "Please note that these estimates are not guaranteed and will vary based on developer responsiveness",
+      "sources": [
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification",
+        "https://support.google.com/cloud/answer/13463817",
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "gmail",
+      "claim": "Fact: Google's review time estimates",
+      "quote": "The sensitive scope verification process typically takes 3-5 business days to complete.",
+      "sources": [
+        "https://support.google.com/cloud/answer/13463817",
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification",
+        "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Summary: Difficulty",
+      "quote": "You can't change the method after you select it",
+      "sources": [
+        "https://shopify.dev/docs/apps/launch/distribution",
+        "https://shopify.dev/docs/apps/launch/distribution/select-distribution-method",
+        "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements",
+        "https://shopify.dev/docs/apps/launch/protected-customer-data",
+        "https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/offline-access-tokens"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Composio: Composio setup",
+      "quote": "It must match exactly with your Shopify app configuration.",
+      "sources": [
+        "https://docs.composio.dev/toolkits/managed-auth",
+        "https://docs.composio.dev/toolkits/shopify",
+        "https://composio.dev/auth/shopify"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: A Partner organization to distribute to other merchants",
+      "quote": "The Distribution card appears only for apps that belong to a Partner organization.",
+      "sources": [
+        "https://shopify.dev/docs/apps/launch/distribution/select-distribution-method",
+        "https://shopify.dev/docs/apps/build/dev-dashboard/create-apps-using-dev-dashboard"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: Distribution method is permanent",
+      "quote": "You can't change the method after you select it",
+      "sources": [
+        "https://shopify.dev/docs/apps/launch/distribution/select-distribution-method",
+        "https://shopify.dev/docs/apps/launch/distribution"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: App Store review for public apps",
+      "quote": "Your app must meet all requirements on the App Store review page before your app is reviewed.",
+      "sources": [
+        "https://shopify.dev/docs/apps/launch/app-store-review/review-process",
+        "https://shopify.dev/docs/apps/launch/distribution"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: App Store apps can't ask for the shop domain",
+      "quote": "Your app must not request the manual entry of a myshopify.com URL or a shop's domain",
+      "sources": [
+        "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements",
+        "https://composio.dev/auth/shopify"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: OAuth must run right after install",
+      "quote": "Your app must immediately authenticate using OAuth before any other steps occur.",
+      "sources": [
+        "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: Three mandatory compliance webhooks",
+      "quote": "Every app that's distributed through the Shopify App Store must subscribe to the following compliance webhook topics:",
+      "sources": [
+        "https://shopify.dev/docs/apps/build/privacy-law-compliance"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: Charges must go through Shopify",
+      "quote": "Your app must use Shopify App Pricing or the Shopify Billing API for all app charges",
+      "sources": [
+        "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements",
+        "https://shopify.dev/docs/apps/launch/distribution"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: Protected customer data needs review on public apps",
+      "quote": "By default, apps don't have access to any protected customer data.",
+      "sources": [
+        "https://shopify.dev/docs/apps/launch/protected-customer-data",
+        "https://shopify.dev/docs/api/usage/access-scopes"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: Orders older than 60 days need approval",
+      "quote": "you have access to the last 60 days' worth of orders for a store.",
+      "sources": [
+        "https://shopify.dev/docs/api/usage/access-scopes",
+        "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: Request only needed scopes; merchants can change them",
+      "quote": "Merchants can modify requested scopes during authorization, so always verify before storing the token.",
+      "sources": [
+        "https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant",
+        "https://shopify.dev/docs/api/usage/access-scopes",
+        "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: redirect_uri must match exactly",
+      "quote": "Must exactly match a redirect URI you've configured in the Dev Dashboard or your app's configuration TOML file.",
+      "sources": [
+        "https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant",
+        "https://composio.dev/auth/shopify"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: Expiring offline tokens for public apps",
+      "quote": "Public apps must use expiring offline access tokens for GraphQL Admin API requests by January 1, 2027.",
+      "sources": [
+        "https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/offline-access-tokens",
+        "https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: New public apps must use GraphQL only",
+      "quote": "As of April 1, 2025 all new public apps must be built exclusively with the GraphQL Admin API.",
+      "sources": [
+        "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: GraphQL limits depend on the store's plan",
+      "quote": "A single query may not exceed a cost of 1,000 points, regardless of plan limits.",
+      "sources": [
+        "https://shopify.dev/docs/apps/build/apis/graphql-admin/rate-limits",
+        "https://shopify.dev/docs/api/usage/limits"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "shopify",
+      "claim": "Requirement: Merchants can't create admin custom apps anymore",
+      "quote": "If you have legacy custom apps created before January 1, 2026, you can manage them from your Shopify admin.",
+      "sources": [
+        "https://help.shopify.com/en/manual/apps/app-types/custom-apps"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Composio: Composio setup",
+      "quote": "Composio is working on Marketplace review for the managed Slack app. Until that review is complete, use the workspace's own Slack OAuth app or ask a workspace admin to approve the app if the warning blocks users.",
+      "sources": [
+        "https://docs.composio.dev/toolkits/managed-auth",
+        "https://docs.composio.dev/toolkits/slack",
+        "https://docs.composio.dev/docs/auth-configuration/custom-auth-configs"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "App type: Bot token, user token, or both?",
+      "quote": "Since acting independently allows your app to stay installed even when an installing user is deactivated, using bot tokens is usually for the best.",
+      "sources": [
+        "https://docs.slack.dev/authentication/tokens",
+        "https://docs.slack.dev/authentication/installing-with-oauth",
+        "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide",
+        "https://docs.composio.dev/toolkits/slack"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: No review to create, test, or distribute unlisted",
+      "quote": "Distributing your unlisted app is perfect for when you want to test out your app by running a pilot for early customers; however, apps intended for commercial distribution should be submitted and approved for listing in the Slack Marketplace.",
+      "sources": [
+        "https://docs.slack.dev/app-management/distribution",
+        "https://docs.slack.dev/app-management/quickstart-app-settings"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: Marketplace listing expected for commercial distribution",
+      "quote": "The updated terms confirm that the Slack Marketplace is the only appropriate channel for commercially distributing apps built with Slack APIs, whether those apps are \"unlisted\" (published outside of the Marketplace) or provide a customer instructions for a templated custom app that connects to your product.",
+      "sources": [
+        "https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps",
+        "https://docs.slack.dev/app-management/distribution"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: Unlisted apps: 1 request per minute on channel history",
+      "quote": "The new rate limits will be updated to allow 1 request per minute and will return a maximum of 15 objects per request.",
+      "sources": [
+        "https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps",
+        "https://docs.slack.dev/apis/web-api/rate-limits",
+        "https://docs.composio.dev/toolkits/slack"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: Marketplace submission needs 10 active workspaces",
+      "quote": "Your app has been installed on 10 or more active workspaces and the service has been tested on those workspaces in accordance with the above bullet. An active workspace is a workspace that has been used in the past 28 days.",
+      "sources": [
+        "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide",
+        "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: Privacy policy, landing page, and support page for Marketplace",
+      "quote": "All Slack Marketplace apps must include a clear privacy policy that details how third-party data is handled and this page should be accessible on your app’s landing page.",
+      "sources": [
+        "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: AI rules for Marketplace apps",
+      "quote": "use Slack data to train Large Language Models (LLMs).",
+      "sources": [
+        "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: Some scopes can't be approved for the Marketplace",
+      "quote": "you’ll also need to ensure that your app does not request legacy/restricted scopes, scopes that provide extensive access to workspace data, or coded workflow scopes (e.g. `identity.*`, `workflow.steps:execute`, `read`, `post`, `client`, `admin.*`, `search:read`, `triggers:*`).",
+      "sources": [
+        "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: Workspace owners may need to approve your app",
+      "quote": "Apps connect third-party services to Slack, and by default, members can install them without approval from a workspace owner.",
+      "sources": [
+        "https://slack.com/help/articles/222386767-Manage-app-approval-for-your-workspace",
+        "https://docs.slack.dev/app-management/distribution",
+        "https://docs.composio.dev/toolkits/slack"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: Enterprise org-wide installs need opt-in and an Org Admin",
+      "quote": "When an Org Admin installs your app across the entire organization, it will not yet be installed to any workspaces in the organization.",
+      "sources": [
+        "https://docs.slack.dev/enterprise/developing-for-enterprise-orgs",
+        "https://docs.slack.dev/authentication/installing-with-oauth"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: Redirect URLs must be HTTPS; subpaths match",
+      "quote": "Your `redirect_uri` must match or be a subdirectory of a Redirect URL configured under **App Management**. A Redirect URL can _not_ contain an anchor (`#`).",
+      "sources": [
+        "https://docs.slack.dev/authentication/installing-with-oauth",
+        "https://docs.slack.dev/app-management/distribution"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Requirement: Tokens never expire unless you turn on rotation, which is permanent",
+      "quote": "Without token rotation, the access token never expires. With token rotation, it expires every 12 hours.",
+      "sources": [
+        "https://docs.slack.dev/authentication/using-token-rotation"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Step: Copy the client ID and client secret",
+      "quote": "You'll need your app's `client_id` and `client_secret` as well, which can be found under **App Credentials** within **Basic Information** on the [app settings](https://api.slack.com/apps) page.",
+      "sources": [
+        "https://docs.slack.dev/authentication/using-token-rotation"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Fact: Authorization code lifetime",
+      "quote": "That's your temporary authorization code, which expires after ten minutes.",
+      "sources": [
+        "https://docs.slack.dev/authentication/installing-with-oauth"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "slack",
+      "claim": "Fact: Marketplace review time",
+      "quote": "Currently, the preliminary part of the review takes up to 10 business days to receive feedback, while the functional review takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes.",
+      "sources": [
+        "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Composio: Composio setup",
+      "quote": "As of February 2026, Composio managed credentials for the Twitter toolkit have been removed.",
+      "sources": [
+        "https://docs.composio.dev/toolkits/managed-auth",
+        "https://docs.composio.dev/toolkits/twitter",
+        "https://docs.composio.dev/docs/changelog/2026/02/12",
+        "https://docs.composio.dev/docs/auth-configuration/custom-auth-configs",
+        "https://docs.x.com/x-api/posts/manage-tweets/integrate",
+        "https://docs.x.com/developer-terms/policy"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "App type: Which OAuth 2.0 app type: Web App, Automated App or Bot, Native App, or Single Page App?",
+      "quote": "Native App and Single page Apps are public clients and Web App and Automated App or bots are confidential clients.",
+      "sources": [
+        "https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code",
+        "https://docs.x.com/fundamentals/developer-apps",
+        "https://docs.x.com/x-ads-api/mcp",
+        "https://docs.x.com/fundamentals/authentication/oauth-2-0/oauth-1-0a-token-exchange",
+        "https://docs.x.com/developer-guidelines",
+        "https://docs.composio.dev/toolkits/twitter"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: You must buy credits; every call is billed",
+      "quote": "No subscriptions-pay only for what you use.",
+      "sources": [
+        "https://docs.x.com/x-api/getting-started/pricing",
+        "https://docs.x.com/x-api/fundamentals/post-cap"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: Per-call prices to budget for",
+      "quote": "Prices are subject to change.",
+      "sources": [
+        "https://docs.x.com/x-api/getting-started/pricing",
+        "https://docs.x.com/changelog"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: 3 million Post reads per month on pay-per-usage",
+      "quote": "Pay-per-usage plans are subject to a monthly cap of 3 million Post reads.",
+      "sources": [
+        "https://docs.x.com/x-api/fundamentals/post-cap",
+        "https://docs.x.com/x-api/getting-started/pricing"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: Accept the Developer Agreement and describe your use case",
+      "quote": "Your use case description is binding on you, and any substantive deviation from it may constitute a violation of our rules and result in enforcement action.",
+      "sources": [
+        "https://docs.x.com/x-api/getting-started/getting-access",
+        "https://docs.x.com/developer-terms/policy"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: No documented review before your app can be used",
+      "quote": "We review all proposed uses of the X developer platform to verify policy compliance",
+      "sources": [
+        "https://docs.x.com/x-api/getting-started/getting-access",
+        "https://docs.x.com/developer-terms/policy"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: AI-generated replies need prior approval from X",
+      "quote": "Deploying AI-generated replies without approval is a violation, even if the content itself is helpful.",
+      "sources": [
+        "https://docs.x.com/developer-guidelines"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: API replies only work when the user summoned your account",
+      "quote": "Replies via the API are only permitted if the replying account has been explicitly summoned by the original post's author.",
+      "sources": [
+        "https://docs.x.com/x-api/posts/manage-tweets/integrate",
+        "https://docs.x.com/changelog"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: Follow, like, and quote-post writes are removed from self-serve",
+      "quote": "Following, Likes, and Quote-Posts via the API have been removed from all self-serve tiers.",
+      "sources": [
+        "https://docs.x.com/changelog",
+        "https://docs.x.com/developer-guidelines"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: Exact callback match, up to 10 URLs",
+      "quote": "URLs must match exactly (including trailing slashes)",
+      "sources": [
+        "https://docs.x.com/fundamentals/developer-apps",
+        "https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: Access tokens last 2 hours; request offline.access",
+      "quote": "By default, the access token you create through the Authorization Code Flow with PKCE will only stay valid for two hours unless you’ve used the `offline.access` scope.",
+      "sources": [
+        "https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code",
+        "https://docs.x.com/fundamentals/authentication/oauth-2-0/oauth-1-0a-token-exchange"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: One live grant per app and user",
+      "quote": "X keeps a single live OAuth grant per (app, user): signing in from a second client revokes the first client's tokens.",
+      "sources": [
+        "https://docs.x.com/x-ads-api/mcp"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Requirement: One app per use case, plus dev and staging",
+      "quote": "you may create and use a maximum of 3 applications for development, staging, and production instances of the same service.",
+      "sources": [
+        "https://docs.x.com/developer-terms/policy"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Step: Copy the Client ID and Client Secret",
+      "quote": "Credentials are only displayed once.",
+      "sources": [
+        "https://docs.x.com/x-api/getting-started/getting-access",
+        "https://docs.x.com/x-ads-api/mcp"
+      ],
+      "result": "found"
+    },
+    {
+      "guide": "x",
+      "claim": "Fact: Authorization code lifetime",
+      "quote": "You will have to exchange it with an access token within 30 seconds, or the auth_code will expire.",
+      "sources": [
+        "https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code"
+      ],
+      "result": "found"
+    }
+  ],
+  "links": {
+    "checked": 95,
+    "broken": []
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "ranAt": "2026-10-19",
+  "total": 21,
+  "drift": 2,
+  "rows": [
+    {
+      "guide": "github",
+      "probeId": "probe-authorize",
+      "kind": "authorize-endpoint",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "HTTP 302 redirect to https://github.com/login. The endpoint is live and redirects (usually to sign-in or an error page). A placeholder client_id cannot prove your own app will work."
+    },
+    {
+      "guide": "github",
+      "probeId": "probe-token",
+      "kind": "token-endpoint",
+      "recorded": "inconclusive",
+      "rerun": "skipped",
+      "observed": "Token probes use POST and are re-run by hand only."
+    },
+    {
+      "guide": "github",
+      "probeId": "probe-discovery",
+      "kind": "oidc-discovery",
+      "recorded": "refuted",
+      "rerun": "refuted",
+      "observed": "https://github.com/.well-known/openid-configuration: HTTP 404; https://github.com/.well-known/oauth-authorization-server: HTTP 404. No discovery document found."
+    },
+    {
+      "guide": "github",
+      "probeId": "probe-console",
+      "kind": "dev-console-url",
+      "recorded": "inconclusive",
+      "rerun": "inconclusive",
+      "observed": "Console URL: HTTP 302 redirect to https://github.com/login. Control path: HTTP 302 redirect to https://github.com/login. A made-up path on the same host behaves the same way, so this does not prove the route exists."
+    },
+    {
+      "guide": "gmail",
+      "probeId": "probe-discovery",
+      "kind": "oidc-discovery",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "HTTP 200 JSON. authorization_endpoint=https://accounts.google.com/o/oauth2/v2/auth; token_endpoint=https://oauth2.googleapis.com/token; PKCE methods=[\"plain\",\"S256\"]."
+    },
+    {
+      "guide": "gmail",
+      "probeId": "probe-authorize",
+      "kind": "authorize-endpoint",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "HTTP 302 redirect to https://accounts.google.com/signin/oauth/error. Page text: “Moved Temporarily Moved Temporarily The document has moved here .”. The endpoint is live and redirects (usually to sign-in or an error page). A placeholder client_id cannot prove your own app will work."
+    },
+    {
+      "guide": "gmail",
+      "probeId": "probe-token",
+      "kind": "token-endpoint",
+      "recorded": "confirmed",
+      "rerun": "skipped",
+      "observed": "Token probes use POST and are re-run by hand only."
+    },
+    {
+      "guide": "gmail",
+      "probeId": "probe-console",
+      "kind": "dev-console-url",
+      "recorded": "inconclusive",
+      "rerun": "inconclusive",
+      "observed": "Console URL: HTTP 302 redirect to https://accounts.google.com/ServiceLogin. Control path: HTTP 302 redirect to https://accounts.google.com/ServiceLogin. A made-up path on the same host behaves the same way, so this does not prove the route exists."
+    },
+    {
+      "guide": "shopify",
+      "probeId": "probe-authorize-missing-shop",
+      "kind": "authorize-endpoint",
+      "recorded": "confirmed",
+      "rerun": "inconclusive",
+      "observed": "HTTP 404. Page text: “Store unavailable Shopify This store will be right back Shopify is working to bring it back online as soon as possible”. A made-up sibling path also returns HTTP 404, so this response does not show an OAuth endpoint. A placeholder client_id cannot prove your own app will work."
+    },
+    {
+      "guide": "shopify",
+      "probeId": "probe-dev-dashboard",
+      "kind": "dev-console-url",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "Console URL: HTTP 302 redirect to https://accounts.shopify.com/session-service/login. Control path: HTTP 301 redirect to https://shopify.dev/. The console URL behaves differently from a made-up path, so the route exists."
+    },
+    {
+      "guide": "shopify",
+      "probeId": "probe-partners",
+      "kind": "dev-console-url",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "Console URL: HTTP 301 redirect to https://www.shopify.com/partners. Control path: HTTP 404. The console URL behaves differently from a made-up path, so the route exists."
+    },
+    {
+      "guide": "slack",
+      "probeId": "probe-discovery",
+      "kind": "oidc-discovery",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "HTTP 200 JSON. authorization_endpoint=https://slack.com/openid/connect/authorize; token_endpoint=https://slack.com/api/openid.connect.token; PKCE methods=\"not listed\"."
+    },
+    {
+      "guide": "slack",
+      "probeId": "probe-authorize",
+      "kind": "authorize-endpoint",
+      "recorded": "inconclusive",
+      "rerun": "confirmed",
+      "observed": "HTTP 200. The endpoint is live and answers OAuth requests. A placeholder client_id cannot prove your own app will work."
+    },
+    {
+      "guide": "slack",
+      "probeId": "probe-token",
+      "kind": "token-endpoint",
+      "recorded": "confirmed",
+      "rerun": "skipped",
+      "observed": "Token probes use POST and are re-run by hand only."
+    },
+    {
+      "guide": "slack",
+      "probeId": "probe-console",
+      "kind": "dev-console-url",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "Console URL: HTTP 200. Control path: HTTP 302 redirect to https://docs.slack.dev/404. The console URL behaves differently from a made-up path, so the route exists."
+    },
+    {
+      "guide": "slack",
+      "probeId": "probe-authorize-recheck",
+      "kind": "authorize-endpoint",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "HTTP 200. The endpoint is live and answers OAuth requests. A placeholder client_id cannot prove your own app will work."
+    },
+    {
+      "guide": "x",
+      "probeId": "probe-authorize",
+      "kind": "authorize-endpoint",
+      "recorded": "inconclusive",
+      "rerun": "inconclusive",
+      "observed": "HTTP 200. Page text: “Authorize app / X Log in to X to continue. Log in”. A made-up sibling path also returns HTTP 200, so this response does not show an OAuth endpoint. A placeholder client_id cannot prove your own app will work."
+    },
+    {
+      "guide": "x",
+      "probeId": "probe-discovery",
+      "kind": "oidc-discovery",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "HTTP 200 JSON. authorization_endpoint=https://x.com/i/oauth2/authorize; token_endpoint=https://api.x.com/2/oauth2/token; PKCE methods=[\"S256\"]."
+    },
+    {
+      "guide": "x",
+      "probeId": "probe-token",
+      "kind": "token-endpoint",
+      "recorded": "confirmed",
+      "rerun": "skipped",
+      "observed": "Token probes use POST and are re-run by hand only."
+    },
+    {
+      "guide": "x",
+      "probeId": "probe-console",
+      "kind": "dev-console-url",
+      "recorded": "confirmed",
+      "rerun": "confirmed",
+      "observed": "Console URL: HTTP 200. Control path: HTTP 404. The console URL behaves differently from a made-up path, so the route exists."
+    },
+    {
+      "guide": "x",
+      "probeId": "probe-legacy-portal",
+      "kind": "dev-console-url",
+      "recorded": "inconclusive",
+      "rerun": "inconclusive",
+      "observed": "Console URL: HTTP 307 redirect to https://www.twitter.com/login. Control path: HTTP 307 redirect to https://www.twitter.com/login. A made-up path on the same host behaves the same way, so this does not prove the route exists."
+    }
+  ]
+}

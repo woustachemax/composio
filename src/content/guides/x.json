@@ -1,0 +1,990 @@
+{
+  "schemaVersion": 1,
+  "slug": "x",
+  "app": {
+    "name": "X (formerly Twitter)",
+    "website": "https://x.com",
+    "category": "Social media",
+    "developerConsoleUrl": "https://console.x.com"
+  },
+  "meta": {
+    "lastVerified": "2026-10-19",
+    "origin": "hand-researched",
+    "researchNotes": "Read the official X docs as raw Markdown from docs.x.com (including llms-full.txt) and the Composio Twitter toolkit, managed-auth directory, and changelog pages. Ran nine unauthenticated HTTP requests against x.com, api.x.com, console.x.com, and developer.x.com. No developer account was created and no app was registered, so the console form labels, the use-case questions, and the effort estimate are not first-hand. The X Automation Rules page on help.x.com returned a bot challenge and HTTP 403, so automation rules are sourced from the developer guidelines page on docs.x.com instead. X's pricing and tier docs disagree with each other in places; those spots are marked."
+  },
+  "summary": {
+    "verdict": "Self-serve registration with no documented review for ordinary use, but you must buy API credits before any call works. Every read and write costs money. The bigger risks are policy: AI-generated replies need prior approval from X, replies only work when the user was summoned, and follow and like writes are gone from self-serve access.",
+    "difficulty": {
+      "level": "moderate",
+      "reason": "The console form is short and gives you a Client ID and Secret right away. What makes it moderate is the prepaid billing, per-call costs, the 2-hour access token, and policy limits on what an agent may post.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-getting-access", "x-pricing", "x-dev-guidelines", "x-manage-posts"],
+        "note": "The absence of a review step for ordinary use is inferred from the getting-access steps, which go straight from signup to credentials. The Developer Policy separately says X reviews all proposed uses, so treat this as likely, not certain."
+      }
+    },
+    "time": {
+      "handsOn": { "min": 30, "max": 90, "unit": "minutes" },
+      "approvalWait": null,
+      "note": "No approval queue is documented for signing up, creating an app, or calling the API. Two waits can apply. If your agent posts AI-generated replies, X requires prior approval through its Policy Support form, and no turnaround time is published. If you need more than self-serve allows, Enterprise access goes through a sales form.",
+      "evidence": {
+        "status": "uncertain",
+        "reason": "The hands-on range is an estimate from the documented signup, app, billing, and OAuth settings steps plus Composio setup and a test connection. Nobody timed a real registration. The Developer Policy says X reviews all proposed uses, but the current getting-access page shows no wait, so we could not confirm whether a review delays new accounts.",
+        "sourceIds": ["x-getting-access", "x-dev-policy", "x-dev-guidelines"]
+      }
+    }
+  },
+  "composio": {
+    "managedAuthAvailable": "no",
+    "whyBringYourOwn": [
+      "Composio removed its managed Twitter credentials in February 2026, so you cannot start without your own app",
+      "X bills API usage to the developer account that owns the app, so the credits and spending limits are yours",
+      "Your app name and website URL appear as the source label on posts your agent creates",
+      "You declare the use case to X, and it is binding on you"
+    ],
+    "callbackUrl": "https://backend.composio.dev/api/v3/toolkits/auth/callback",
+    "evidence": {
+      "status": "documented",
+      "sourceIds": ["composio-managed", "composio-twitter", "composio-changelog-twitter", "composio-custom-auth", "x-manage-posts", "x-dev-policy"],
+      "quote": "As of February 2026, Composio managed credentials for the Twitter toolkit have been removed.",
+      "note": "Composio's directory lists Twitter under \"Bring your own OAuth app\". The custom auth page is marked legacy, so re-check the callback URL in your Composio auth config before registering."
+    }
+  },
+  "appTypeChoice": {
+    "question": "Which OAuth 2.0 app type: Web App, Automated App or Bot, Native App, or Single Page App?",
+    "recommendation": "Choose Web App. It is a confidential client, so you get a Client Secret, which Composio's server-side flow can keep safe. Use OAuth 2.0 rather than OAuth 1.0a: X recommends it for new projects, it has fine-grained scopes, and Composio's Twitter toolkit uses OAuth 2.0.",
+    "options": [
+      {
+        "name": "Web App (confidential)",
+        "bestFor": "Server-side flows such as Composio's hosted callback",
+        "tradeoffs": [
+          "You get a Client Secret and must store it securely",
+          "Token requests use HTTP Basic auth with the Client ID and Secret",
+          "X's docs say client_secret_post is rejected"
+        ]
+      },
+      {
+        "name": "Automated App or Bot (confidential)",
+        "bestFor": "A bot account your own team runs on a server",
+        "tradeoffs": [
+          "Same credentials as Web App",
+          "Automated accounts must carry the Automated label, disclose the operator in the bio, and link to a human-managed account"
+        ]
+      },
+      {
+        "name": "Native App or Single Page App (public)",
+        "bestFor": "Mobile, desktop, or browser apps that cannot keep a secret",
+        "tradeoffs": [
+          "No Client Secret; PKCE only",
+          "Client ID must be sent in the body of token requests",
+          "Not a fit for Composio's custom auth config, which asks for a client secret"
+        ]
+      },
+      {
+        "name": "OAuth 1.0a (not an OAuth 2.0 type)",
+        "bestFor": "Existing integrations and v1.1 endpoints",
+        "tradeoffs": [
+          "Coarse permissions: Read, Read and write, or Read, write, and Direct Messages",
+          "Changing permissions forces users to re-authorize",
+          "X documents a token exchange to move OAuth 1.0a users to OAuth 2.0 and refers to OAuth 1.0a being retired, without a date we could find"
+        ]
+      }
+    ],
+    "evidence": {
+      "status": "documented",
+      "sourceIds": ["x-oauth2-authcode", "x-dev-apps", "x-ads-mcp", "x-token-exchange", "x-dev-guidelines", "composio-twitter"],
+      "quote": "Native App and Single page Apps are public clients and Web App and Automated App or bots are confidential clients.",
+      "note": "The point that Composio needs a client secret is our inference from the custom auth config asking for Client ID and Client Secret."
+    }
+  },
+  "requirements": [
+    {
+      "id": "prepaid-credits",
+      "category": "paid-plan",
+      "title": "You must buy credits; every call is billed",
+      "applies": "required",
+      "impact": "blocker",
+      "detail": "The X API is pay-per-usage. You buy credits in the Developer Console and each request deducts from them. When the balance hits zero, requests fail until you add more. Reads are billed per resource returned, and writes per request. There is no monthly minimum.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-pricing", "x-usage-billing"],
+        "quote": "No subscriptions-pay only for what you use.",
+        "note": "We found no free allowance for new accounts in the current docs. That is inferred from its absence. The free credits below need a purchase first."
+      }
+    },
+    {
+      "id": "pricing-rates",
+      "category": "paid-plan",
+      "title": "Per-call prices to budget for",
+      "applies": "required",
+      "impact": "friction",
+      "detail": "As listed on 2026-10-19: Post read $0.005 per resource, User read $0.010, Post create $0.015, Post create with a URL $0.200, summoned reply $0.010, DM create $0.015. Reads of your own data on qualifying endpoints cost $0.001 per resource. The same resource is charged once per UTC day. X says prices change and the console shows current rates.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-pricing", "x-changelog"],
+        "quote": "Prices are subject to change."
+      }
+    },
+    {
+      "id": "monthly-read-cap",
+      "category": "rate-limits",
+      "title": "3 million Post reads per month on pay-per-usage",
+      "applies": "required",
+      "impact": "info",
+      "detail": "Pay-per-usage accounts are capped at 3 million Post reads per monthly billing cycle. Above that you need an Enterprise plan.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-usage-billing", "x-pricing"],
+        "quote": "Pay-per-usage plans are subject to a monthly cap of 3 million Post reads."
+      }
+    },
+    {
+      "id": "legacy-tiers",
+      "category": "paid-plan",
+      "title": "Free, Basic, and Pro tiers are legacy and the docs disagree",
+      "applies": "conditional",
+      "condition": "Only if your developer account predates February 6, 2026",
+      "impact": "info",
+      "detail": "X launched pay-per-use on February 6, 2026. The changelog says Basic and Pro remain for existing subscribers, who can opt in to pay-per-use. The pricing and console pages say there are no subscriptions. The Developer Policy and guidelines still refer to Free, Basic, and Pro, and say the free tier is non-commercial only. New accounts should expect pay-per-use.",
+      "evidence": {
+        "status": "uncertain",
+        "reason": "Official pages contradict each other. We could not confirm whether a new account can still choose Basic or Pro, or what the old tier prices are today. We did not use remembered prices.",
+        "sourceIds": ["x-changelog", "x-pricing", "x-dev-console", "x-dev-policy", "x-dev-guidelines"]
+      }
+    },
+    {
+      "id": "developer-agreement-use-case",
+      "category": "app-review",
+      "title": "Accept the Developer Agreement and describe your use case",
+      "applies": "required",
+      "impact": "friction",
+      "detail": "Signup asks you to accept the Developer Agreement and Policy and give basic information about how you will use the API. Each app also needs a name, description, and use case. The Developer Policy says the use case description is binding, and you must get approval before using X content for a substantively new purpose.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-getting-access", "x-dev-policy"],
+        "quote": "Your use case description is binding on you, and any substantive deviation from it may constitute a violation of our rules and result in enforcement action."
+      }
+    },
+    {
+      "id": "no-app-review",
+      "category": "app-review",
+      "title": "No documented review before your app can be used",
+      "applies": "not-required",
+      "impact": "info",
+      "detail": "The getting-access steps go from signup to app creation to credentials with no review queue. The Developer Policy still says X reviews all proposed uses for compliance, so a review can happen after the fact.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-getting-access", "x-dev-policy"],
+        "quote": "We review all proposed uses of the X developer platform to verify policy compliance",
+        "note": "The absence of an up-front review is inferred from the documented steps. X does not say \"no review is required\"."
+      }
+    },
+    {
+      "id": "ai-reply-approval",
+      "category": "app-review",
+      "title": "AI-generated replies need prior approval from X",
+      "applies": "conditional",
+      "condition": "If your agent generates and posts replies",
+      "impact": "blocker",
+      "detail": "X's developer guidelines list AI-powered apps that generate and post replies as needing prior approval. You request it through the Policy Support form before launch. Even with approval, the bot cannot impersonate humans and must follow the other automation rules.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-dev-guidelines"],
+        "quote": "Deploying AI-generated replies without approval is a violation, even if the content itself is helpful."
+      }
+    },
+    {
+      "id": "summoned-replies-only",
+      "category": "other",
+      "title": "API replies only work when the user summoned your account",
+      "applies": "required",
+      "impact": "blocker",
+      "detail": "On self-serve access, a reply via POST /2/tweets is rejected unless the original post's author @mentioned the replying account or quoted one of its posts. Posts are also limited to one cashtag. Enterprise access is not subject to these limits.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-manage-posts", "x-changelog"],
+        "quote": "Replies via the API are only permitted if the replying account has been explicitly summoned by the original post's author."
+      }
+    },
+    {
+      "id": "no-follow-like-writes",
+      "category": "restricted-scopes",
+      "title": "Follow, like, and quote-post writes are removed from self-serve",
+      "applies": "required",
+      "impact": "friction",
+      "detail": "Since April 20, 2026, following, liking, and quote-posting via the API are removed from all self-serve tiers. The scopes still exist, so tools that call these endpoints can be offered but fail. Separately, the guidelines ban automated or bulk liking and following.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-changelog", "x-dev-guidelines"],
+        "quote": "Following, Likes, and Quote-Posts via the API have been removed from all self-serve tiers.",
+        "note": "The pricing page still lists a \"User Interaction: Create\" price without saying which actions it covers."
+      }
+    },
+    {
+      "id": "automation-rules",
+      "category": "other",
+      "title": "Automation rules for agent-driven accounts",
+      "applies": "conditional",
+      "condition": "If your agent posts, replies, or interacts automatically",
+      "impact": "friction",
+      "detail": "Automated accounts must turn on the Automated label, disclose the operator in the bio, link to a human-managed account, and honor opt-out requests. Unsolicited replies, mentions, and DMs are prohibited. Scraping or browser automation outside the API leads to permanent suspension. Using X data to train AI models is prohibited except for Grok.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-dev-guidelines", "x-dev-apps"],
+        "note": "The full Automation Rules page on help.x.com blocked our fetch, so this is taken from the summary on docs.x.com."
+      }
+    },
+    {
+      "id": "callback-exact-match",
+      "category": "redirect-uri",
+      "title": "Exact callback match, up to 10 URLs",
+      "applies": "required",
+      "impact": "friction",
+      "detail": "Register Composio's callback URL exactly, including any trailing slash. An app can have up to 10 callback URLs. Use https in production. For local development use http://127.0.0.1, not localhost.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-dev-apps", "x-oauth2-authcode"],
+        "quote": "URLs must match exactly (including trailing slashes)"
+      }
+    },
+    {
+      "id": "token-lifetime",
+      "category": "token-lifecycle",
+      "title": "Access tokens last 2 hours; request offline.access",
+      "applies": "required",
+      "impact": "friction",
+      "detail": "OAuth 2.0 access tokens expire after two hours. You only get a refresh token if you request the offline.access scope. One page says refresh tokens last about 6 months and are single-use, so store the new one after each refresh.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-oauth2-authcode", "x-token-exchange"],
+        "quote": "By default, the access token you create through the Authorization Code Flow with PKCE will only stay valid for two hours unless you’ve used the `offline.access` scope.",
+        "note": "The 6-month, single-use refresh token detail appears only on the token exchange page."
+      }
+    },
+    {
+      "id": "one-grant-per-user",
+      "category": "token-lifecycle",
+      "title": "One live grant per app and user",
+      "applies": "required",
+      "impact": "friction",
+      "detail": "X keeps a single live OAuth grant per app and user. If the same user signs in to the same app from a second client, the first client's tokens are revoked. Don't reuse your Composio app's credentials in other tools or test scripts.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-ads-mcp"],
+        "quote": "X keeps a single live OAuth grant per (app, user): signing in from a second client revokes the first client's tokens.",
+        "note": "Stated on the Ads API MCP page. We assume it applies to all OAuth 2.0 apps but did not test it."
+      }
+    },
+    {
+      "id": "rate-limits",
+      "category": "rate-limits",
+      "title": "Per-user and per-app limits in 15-minute or 24-hour windows",
+      "applies": "required",
+      "impact": "info",
+      "detail": "User tokens count against per-user limits. For example, POST /2/tweets allows 100 per 15 minutes per user and 10,000 per 24 hours per app. GET /2/users/me allows 75 per 15 minutes per user. Exceeding a limit returns HTTP 429. Rate limits are separate from billing.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-rate-limits"]
+      }
+    },
+    {
+      "id": "app-count",
+      "category": "other",
+      "title": "One app per use case, plus dev and staging",
+      "applies": "required",
+      "impact": "info",
+      "detail": "You may not register multiple apps for the same or overlapping use case. The exception is up to 3 apps for development, staging, and production, named as such. White-label versions need separate approval.",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-dev-policy"],
+        "quote": "you may create and use a maximum of 3 applications for development, staging, and production instances of the same service."
+      }
+    },
+    {
+      "id": "project-link",
+      "category": "other",
+      "title": "App may need to be in a Project and the right environment",
+      "applies": "conditional",
+      "condition": "If you see client-not-enrolled or App not linked to project errors",
+      "impact": "friction",
+      "detail": "Some X pages say v2 credentials must come from an app inside a Project. The current console pages only mention creating an app. X's MCP page says client-not-enrolled means the app should be moved to Pay-per-use and Production in the portal.",
+      "evidence": {
+        "status": "uncertain",
+        "reason": "Older and newer X pages disagree on whether Projects still exist in the new console. We could not sign in to check.",
+        "sourceIds": ["x-manage-posts", "x-dev-console", "x-mcp", "composio-twitter"]
+      }
+    },
+    {
+      "id": "privacy-policy-unknown",
+      "category": "privacy-policy",
+      "title": "Privacy policy and terms URLs",
+      "applies": "conditional",
+      "condition": "If the console's authentication settings ask for them",
+      "impact": "info",
+      "detail": "The docs we read mention a website URL and a use case, but not whether a privacy policy or terms of service URL is required. Have both ready.",
+      "evidence": {
+        "status": "uncertain",
+        "reason": "No current X page we found lists the full OAuth settings form, and we could not sign in to see it."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "id": "check-use-case",
+      "title": "Check your agent's actions against X policy",
+      "owner": "agent",
+      "phase": "decide",
+      "effort": { "min": 5, "max": 15, "unit": "minutes" },
+      "instructions": [
+        "List each X action your agent will take.",
+        "Flag AI-generated replies (need prior approval), unsummoned replies (rejected), and follows, likes, or quote-posts (not available on self-serve).",
+        "Flag any unsolicited mentions or DMs, which are prohibited."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-dev-guidelines", "x-manage-posts", "x-changelog"]
+      }
+    },
+    {
+      "id": "budget",
+      "title": "Estimate cost and decide on self-serve or Enterprise",
+      "owner": "you",
+      "agentAssist": "An agent can estimate monthly cost from expected reads and posts using the published per-call prices.",
+      "phase": "decide",
+      "effort": { "min": 5, "max": 20, "unit": "minutes" },
+      "instructions": [
+        "Multiply expected reads and writes by the current per-call prices in the console.",
+        "If you expect more than 3 million Post reads a month, or need replies without the summoned rule, contact X about Enterprise.",
+        "The Developer Policy says the Free, Basic, and Pro plans are for apps with limited end users, and larger use must go to Enterprise. It doesn't say how this applies to pay-per-use."
+      ],
+      "url": "https://docs.x.com/x-api/getting-started/pricing",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-pricing", "x-usage-billing", "x-dev-policy"]
+      }
+    },
+    {
+      "id": "draft-values",
+      "title": "Draft the app and use-case text",
+      "owner": "agent",
+      "phase": "register",
+      "effort": { "min": 5, "max": 10, "unit": "minutes" },
+      "instructions": [
+        "App name: shown as the source label on posts your agent creates.",
+        "Description and use case: plain description of what the agent reads and posts. It is binding, so be specific.",
+        "Website URL: your product's public URL.",
+        "Type of app: Web App.",
+        "App permissions: the minimum needed. Read and write if the agent posts; add Direct Messages only if it sends DMs.",
+        "Callback URL: https://backend.composio.dev/api/v3/toolkits/auth/callback"
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-getting-access", "x-dev-apps", "x-manage-posts", "x-dev-policy", "composio-custom-auth"],
+        "note": "Exact form labels come from the Ads API MCP page and may differ in the general console."
+      }
+    },
+    {
+      "id": "sign-up",
+      "title": "Sign in to the Developer Console and accept the agreement",
+      "owner": "you",
+      "agentAssist": "We checked that console.x.com serves the Developer Console and that a made-up path returns 404.",
+      "phase": "register",
+      "effort": { "min": 5, "max": 15, "unit": "minutes" },
+      "url": "https://console.x.com",
+      "instructions": [
+        "Sign in with the X account that should own the app.",
+        "Accept the Developer Agreement and Policy.",
+        "Complete the profile questions about how you will use the API."
+      ],
+      "evidence": {
+        "status": "tested",
+        "probeIds": ["probe-console"],
+        "sourceIds": ["x-getting-access"]
+      }
+    },
+    {
+      "id": "create-app",
+      "title": "Create the app",
+      "owner": "you",
+      "phase": "register",
+      "effort": { "min": 3, "max": 10, "unit": "minutes" },
+      "instructions": [
+        "Click New App on the console dashboard.",
+        "Paste the name, description, and use case the agent drafted."
+      ],
+      "evidence": { "status": "documented", "sourceIds": ["x-getting-access", "x-dev-console"] }
+    },
+    {
+      "id": "enable-oauth2",
+      "title": "Turn on OAuth 2.0 and set the callback",
+      "owner": "you",
+      "phase": "configure",
+      "effort": { "min": 3, "max": 10, "unit": "minutes" },
+      "instructions": [
+        "Open the app's authentication settings and enable OAuth 2.0.",
+        "Choose Web App as the type of app.",
+        "Add the Composio callback URL exactly, and the website URL.",
+        "Save. The Client ID then appears under Keys and tokens."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-oauth2-authcode", "x-dev-apps"],
+        "note": "We could not see the settings screen, so labels may differ."
+      }
+    },
+    {
+      "id": "save-credentials",
+      "title": "Copy the Client ID and Client Secret",
+      "owner": "you",
+      "phase": "configure",
+      "effort": { "min": 1, "max": 5, "unit": "minutes" },
+      "instructions": [
+        "Copy the OAuth 2.0 Client ID, not the numeric app ID.",
+        "Copy the Client Secret to your secret manager right away. X shows credentials only once; losing them means regenerating, which invalidates the old ones.",
+        "Don't paste the secret into chat, tickets, or the agent."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-getting-access", "x-ads-mcp"],
+        "quote": "Credentials are only displayed once."
+      }
+    },
+    {
+      "id": "buy-credits",
+      "title": "Add a card, buy credits, and set a spending limit",
+      "owner": "you",
+      "phase": "configure",
+      "effort": { "min": 5, "max": 10, "unit": "minutes" },
+      "instructions": [
+        "In the console billing section, add a payment card and buy credits.",
+        "Set a spending limit per billing cycle so a runaway agent can't overspend.",
+        "Optionally turn on auto-recharge. It tops up at most once every 5 minutes.",
+        "New paying accounts may get $20 in free credits after the first purchase and a match of the first auto-recharge up to $50. These expire after 3 months and are still rolling out."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-pricing", "x-free-credits"]
+      }
+    },
+    {
+      "id": "pick-scopes",
+      "title": "Pick the minimum scopes",
+      "owner": "agent",
+      "phase": "configure",
+      "effort": { "min": 2, "max": 10, "unit": "minutes" },
+      "instructions": [
+        "Always include offline.access, or connections die after 2 hours.",
+        "Most agents need tweet.read and users.read. Add tweet.write to post, media.write to upload media, dm.read or dm.write for DMs, bookmark.read or bookmark.write for bookmarks.",
+        "Skip follows.write and like.write. Those actions are not available on self-serve.",
+        "users.email returns the user's email address. Request it only if you need it."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-oauth2-authcode", "x-changelog"]
+      }
+    },
+    {
+      "id": "configure-composio",
+      "title": "Create a custom auth config in Composio",
+      "owner": "you",
+      "agentAssist": "An agent can prepare the scope list and check that the redirect URI in the auth config matches the callback registered on X.",
+      "phase": "configure",
+      "effort": { "min": 3, "max": 10, "unit": "minutes" },
+      "instructions": [
+        "In Composio, create an auth config for the Twitter toolkit using your own OAuth app.",
+        "Paste the Client ID and Client Secret and set the scopes.",
+        "Make sure the redirect URI matches the callback URL registered on X exactly."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["composio-custom-auth", "composio-changelog-twitter"],
+        "note": "Composio marks the custom auth page as legacy, and the dashboard labels may differ."
+      }
+    },
+    {
+      "id": "test-connection",
+      "title": "Connect a test account end to end",
+      "owner": "you",
+      "phase": "verify",
+      "effort": { "min": 5, "max": 15, "unit": "minutes" },
+      "instructions": [
+        "Start a connection for a test X account and approve the consent screen yourself.",
+        "Check that the consent screen shows your app name and the scopes you expect.",
+        "Make one cheap read, such as GET /2/users/me, and confirm credits were deducted."
+      ],
+      "evidence": {
+        "status": "uncertain",
+        "reason": "This needs a signed-in browser session and paid credits. We haven't run it."
+      }
+    },
+    {
+      "id": "check-refresh",
+      "title": "Confirm token refresh works",
+      "owner": "agent",
+      "phase": "verify",
+      "effort": { "min": 1, "max": 5, "unit": "minutes" },
+      "instructions": [
+        "Call the API again more than 2 hours after connecting.",
+        "If it fails with 401, check that offline.access was requested and that the new refresh token is stored after each refresh."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-oauth2-authcode", "x-token-exchange"]
+      }
+    },
+    {
+      "id": "request-ai-approval",
+      "title": "Request approval for AI-generated replies",
+      "owner": "you",
+      "agentAssist": "An agent can draft the request describing what triggers replies, how they are labeled, and how users opt out.",
+      "phase": "launch",
+      "optional": true,
+      "waitsOn": "provider",
+      "url": "https://help.x.com/forms/platform",
+      "instructions": [
+        "Only needed if your agent generates and posts replies.",
+        "Submit the request through X's Policy Support form before launch.",
+        "Don't ship reply features until X approves. No turnaround time is published."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-dev-guidelines"],
+        "note": "We did not open the form, so we don't know what it asks for."
+      }
+    },
+    {
+      "id": "label-automation",
+      "title": "Label any automated account",
+      "owner": "you",
+      "phase": "launch",
+      "optional": true,
+      "instructions": [
+        "Only for accounts your own team runs as bots.",
+        "On the bot account, open Settings, then Your account, then Automation, and link the managing account.",
+        "State in the bio that it is a bot and who runs it."
+      ],
+      "evidence": { "status": "documented", "sourceIds": ["x-dev-apps", "x-dev-guidelines"] }
+    }
+  ],
+  "blockers": [
+    {
+      "id": "callback-not-approved",
+      "symptom": "Error code 415: \"Callback URL not approved for this client application.\"",
+      "cause": "The redirect URI Composio sends doesn't exactly match a callback URL registered on the app.",
+      "fix": [
+        "Copy the exact redirect URI from your Composio auth config into the app's callback URLs.",
+        "Check the scheme, host, path, and trailing slash."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-dev-apps"],
+        "note": "This error is documented on the developer apps page. We did not confirm that the OAuth 2.0 authorize page shows the same message."
+      }
+    },
+    {
+      "id": "invalid-client",
+      "symptom": "Token exchange returns HTTP 400 {\"error\":\"invalid_client\",\"error_description\":\"Value passed for the client id was invalid.\"}",
+      "cause": "The Client ID is wrong. A common mistake is pasting the numeric app ID or the OAuth 1.0a API key instead of the OAuth 2.0 Client ID.",
+      "fix": [
+        "Copy the OAuth 2.0 Client ID from Keys and tokens.",
+        "Update it in the Composio auth config."
+      ],
+      "evidence": {
+        "status": "tested",
+        "probeIds": ["probe-token"],
+        "sourceIds": ["x-ads-mcp"]
+      }
+    },
+    {
+      "id": "client-not-enrolled",
+      "symptom": "client-not-enrolled or \"App not linked to project\" after login",
+      "cause": "The app isn't in the right package or environment, or isn't linked to a project.",
+      "fix": [
+        "In the console, move the app to Pay-per-use and Production.",
+        "If your console shows Projects, make sure the app is inside one.",
+        "Recreate any EXPIRED Composio connection after fixing the app."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-mcp", "composio-twitter"]
+      }
+    },
+    {
+      "id": "out-of-credits",
+      "symptom": "API calls start failing even though the connection is valid",
+      "cause": "The credit balance reached zero or the spending limit for the cycle was hit.",
+      "fix": [
+        "Add credits in the console. A negative balance must be covered before requests resume.",
+        "Raise the spending limit or turn on auto-recharge with a larger recharge amount."
+      ],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-pricing", "x-usage-billing"],
+        "note": "The docs don't give the exact error body for an empty balance."
+      }
+    },
+    {
+      "id": "dies-after-2h",
+      "symptom": "Connections stop working about 2 hours after connecting",
+      "cause": "offline.access wasn't requested, so no refresh token was issued, or a used refresh token was reused.",
+      "fix": [
+        "Add offline.access to the scopes and have users reconnect.",
+        "Store the new refresh token after every refresh."
+      ],
+      "evidence": { "status": "documented", "sourceIds": ["x-oauth2-authcode", "x-token-exchange"] }
+    },
+    {
+      "id": "reply-rejected",
+      "symptom": "Posting a reply fails while normal posts work",
+      "cause": "On self-serve access, replies are rejected unless the original author mentioned or quoted the replying account.",
+      "fix": [
+        "Only reply where the user summoned the account.",
+        "If you need broader replies, talk to X about Enterprise."
+      ],
+      "evidence": { "status": "documented", "sourceIds": ["x-manage-posts"] }
+    },
+    {
+      "id": "follow-like-fails",
+      "symptom": "Follow, like, or quote-post tools fail",
+      "cause": "These actions were removed from all self-serve tiers on April 20, 2026.",
+      "fix": ["Disable those tools for your agent. There is no self-serve fix."],
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-changelog"],
+        "note": "The exact error returned is not documented."
+      }
+    },
+    {
+      "id": "tokens-revoked",
+      "symptom": "A user's connection breaks after they used another tool with the same app",
+      "cause": "X keeps one live grant per app and user, so a sign-in from a second client revokes the first client's tokens.",
+      "fix": [
+        "Use this app only for Composio.",
+        "Create a separate app for other clients, within the 3-app dev, staging, and prod limit."
+      ],
+      "evidence": { "status": "documented", "sourceIds": ["x-ads-mcp", "x-dev-policy"] }
+    },
+    {
+      "id": "rate-limited",
+      "symptom": "HTTP 429 with error code 88 \"Rate limit exceeded\"",
+      "cause": "The per-user or per-app limit for that endpoint was hit in the current window.",
+      "fix": [
+        "Wait until the time in the x-rate-limit-reset header.",
+        "Back off and retry with doubling waits."
+      ],
+      "evidence": { "status": "documented", "sourceIds": ["x-rate-limits"] }
+    },
+    {
+      "id": "suspended",
+      "symptom": "The app shows as suspended",
+      "cause": "X found a policy violation, such as unapproved AI replies, spam, or scraping.",
+      "fix": [
+        "Check your email for a notice from the X platform team.",
+        "Appeal through the Platform Help Form."
+      ],
+      "evidence": { "status": "documented", "sourceIds": ["x-dev-apps", "x-dev-guidelines"] }
+    }
+  ],
+  "facts": [
+    {
+      "id": "authorize-endpoint",
+      "label": "Authorize URL",
+      "value": "https://x.com/i/oauth2/authorize",
+      "evidence": {
+        "status": "tested",
+        "probeIds": ["probe-discovery"],
+        "sourceIds": ["x-oauth2-user-token"],
+        "note": "The server metadata lists this URL. Loading it directly returned the generic x.com app page, so it did not confirm anything on its own."
+      }
+    },
+    {
+      "id": "token-endpoint",
+      "label": "Token URL",
+      "value": "https://api.x.com/2/oauth2/token (POST)",
+      "evidence": {
+        "status": "tested",
+        "probeIds": ["probe-token", "probe-discovery"],
+        "sourceIds": ["x-oauth2-user-token"]
+      }
+    },
+    {
+      "id": "discovery",
+      "label": "OAuth metadata",
+      "value": "https://api.x.com/.well-known/oauth-authorization-server. There is no OIDC discovery document.",
+      "evidence": {
+        "status": "tested",
+        "probeIds": ["probe-discovery"],
+        "note": "Its scopes_supported list leaves out tweet.write and several other documented scopes, so don't treat it as the full scope list."
+      }
+    },
+    {
+      "id": "pkce",
+      "label": "PKCE",
+      "value": "Required. The docs allow S256 or plain; the server metadata lists only S256. Use S256.",
+      "evidence": {
+        "status": "tested",
+        "probeIds": ["probe-discovery"],
+        "sourceIds": ["x-oauth2-authcode"]
+      }
+    },
+    {
+      "id": "client-auth",
+      "label": "Token endpoint client auth",
+      "value": "HTTP Basic (client_secret_basic) for confidential clients; none for public clients. client_secret_post is rejected.",
+      "evidence": {
+        "status": "tested",
+        "probeIds": ["probe-discovery"],
+        "sourceIds": ["x-oauth2-user-token", "x-ads-mcp"]
+      }
+    },
+    {
+      "id": "code-lifetime",
+      "label": "Authorization code lifetime",
+      "value": "30 seconds",
+      "evidence": {
+        "status": "documented",
+        "sourceIds": ["x-oauth2-authcode"],
+        "quote": "You will have to exchange it with an access token within 30 seconds, or the auth_code will expire."
+      }
+    },
+    {
+      "id": "token-lifetime",
+      "label": "Token lifetime",
+      "value": "Access token 2 h. Refresh token only with offline.access; about 6 months and single-use.",
+      "evidence": { "status": "documented", "sourceIds": ["x-oauth2-authcode", "x-token-exchange"] }
+    },
+    {
+      "id": "callback-limit",
+      "label": "Callback URLs",
+      "value": "Up to 10 per app, exact match",
+      "evidence": { "status": "documented", "sourceIds": ["x-dev-apps"] }
+    },
+    {
+      "id": "post-rate-limit",
+      "label": "POST /2/tweets rate limit",
+      "value": "100 per 15 min per user; 10,000 per 24 h per app",
+      "evidence": { "status": "documented", "sourceIds": ["x-rate-limits"] }
+    },
+    {
+      "id": "price-examples",
+      "label": "Sample prices (2026-10-19)",
+      "value": "Post read $0.005, User read $0.010, Post create $0.015, Post with URL $0.200, own-data reads $0.001",
+      "evidence": { "status": "documented", "sourceIds": ["x-pricing"] }
+    },
+    {
+      "id": "read-cap",
+      "label": "Monthly Post read cap",
+      "value": "3 million on pay-per-usage",
+      "evidence": { "status": "documented", "sourceIds": ["x-usage-billing", "x-pricing"] }
+    },
+    {
+      "id": "apps-per-use-case",
+      "label": "Apps per use case",
+      "value": "One, plus up to 3 for dev, staging, and prod",
+      "evidence": { "status": "documented", "sourceIds": ["x-dev-policy"] }
+    },
+    {
+      "id": "revoke-url",
+      "label": "Where users revoke access",
+      "value": "https://x.com/settings/connected_apps",
+      "evidence": { "status": "documented", "sourceIds": ["x-oauth2-user-token"] }
+    }
+  ],
+  "openQuestions": [
+    "Can a new developer account still pick a Basic or Pro subscription, or only pay-per-use? The pricing page and the changelog disagree.",
+    "Does the new console still use Projects? Older pages say v2 credentials need an app inside a Project; the current console pages don't mention them.",
+    "Does the OAuth 2.0 settings form require a privacy policy or terms of service URL? We couldn't sign in to check.",
+    "How long does X take to approve AI-generated replies, and what does the Policy Support form ask for?",
+    "Which scopes does Composio's Twitter auth config request by default, and does it always include offline.access? Its docs page doesn't say.",
+    "Is there a date for retiring OAuth 1.0a? The token exchange page refers to retirement without giving one."
+  ],
+  "sources": [
+    {
+      "id": "x-getting-access",
+      "title": "Getting Access",
+      "url": "https://docs.x.com/x-api/getting-started/getting-access",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-pricing",
+      "title": "X API pay-per-usage pricing and credits",
+      "url": "https://docs.x.com/x-api/getting-started/pricing",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-free-credits",
+      "title": "Free credit incentives for X API pay-per-use accounts",
+      "url": "https://docs.x.com/x-api/getting-started/free-credits",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-usage-billing",
+      "title": "Usage and Billing",
+      "url": "https://docs.x.com/x-api/fundamentals/post-cap",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-dev-apps",
+      "title": "Developer Apps",
+      "url": "https://docs.x.com/fundamentals/developer-apps",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-dev-console",
+      "title": "Developer Console",
+      "url": "https://docs.x.com/fundamentals/developer-portal",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-oauth2-authcode",
+      "title": "OAuth 2.0 Authorization Code Flow with PKCE",
+      "url": "https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-oauth2-user-token",
+      "title": "How to connect to endpoints using OAuth 2.0 Authorization Code Flow with PKCE",
+      "url": "https://docs.x.com/fundamentals/authentication/oauth-2-0/user-access-token",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-token-exchange",
+      "title": "Migrating OAuth 1.0a user tokens to OAuth 2.0",
+      "url": "https://docs.x.com/fundamentals/authentication/oauth-2-0/oauth-1-0a-token-exchange",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-rate-limits",
+      "title": "X API Rate Limits",
+      "url": "https://docs.x.com/x-api/fundamentals/rate-limits",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-dev-guidelines",
+      "title": "Developer Guidelines & Policies",
+      "url": "https://docs.x.com/developer-guidelines",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-dev-policy",
+      "title": "Developer Policy",
+      "url": "https://docs.x.com/developer-terms/policy",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-changelog",
+      "title": "X Developer Platform changelog",
+      "url": "https://docs.x.com/changelog",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-manage-posts",
+      "title": "Manage Posts integration guide",
+      "url": "https://docs.x.com/x-api/posts/manage-tweets/integrate",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-ads-mcp",
+      "title": "X Ads API MCP",
+      "url": "https://docs.x.com/x-ads-api/mcp",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "x-mcp",
+      "title": "X MCP Server",
+      "url": "https://docs.x.com/tools/mcp",
+      "publisher": "provider",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "composio-managed",
+      "title": "Composio managed OAuth app directory",
+      "url": "https://docs.composio.dev/toolkits/managed-auth",
+      "publisher": "composio",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "composio-custom-auth",
+      "title": "Composio custom auth configs (legacy)",
+      "url": "https://docs.composio.dev/docs/auth-configuration/custom-auth-configs",
+      "publisher": "composio",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "composio-twitter",
+      "title": "Composio Twitter toolkit",
+      "url": "https://docs.composio.dev/toolkits/twitter",
+      "publisher": "composio",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "composio-changelog-twitter",
+      "title": "Composio changelog: Removal of managed credentials for Twitter",
+      "url": "https://docs.composio.dev/docs/changelog/2026/02/12",
+      "publisher": "composio",
+      "accessedAt": "2026-10-19"
+    }
+  ],
+  "probes": [
+    {
+      "id": "probe-authorize",
+      "kind": "authorize-endpoint",
+      "description": "Whether the authorize endpoint responds to the documented parameters",
+      "request": "GET https://x.com/i/oauth2/authorize?response_type=code&client_id=placeholder-client-id&redirect_uri=<composio callback>&scope=tweet.read%20users.read%20offline.access&state=x&code_challenge=challenge&code_challenge_method=plain, compared with GET https://x.com/i/this-does-not-exist-xyz",
+      "observed": "Both returned HTTP 200 with the generic x.com HTML app shell and no redirect. The page rendering happens in JavaScript, so a signed-out curl can't tell a valid route or client ID from an invalid one.",
+      "outcome": "inconclusive",
+      "ranAt": "2026-10-19"
+    },
+    {
+      "id": "probe-discovery",
+      "kind": "oidc-discovery",
+      "description": "Whether X publishes OAuth or OIDC server metadata",
+      "request": "GET https://api.x.com/.well-known/oauth-authorization-server, GET https://api.x.com/.well-known/openid-configuration, and GET https://x.com/.well-known/openid-configuration",
+      "observed": "api.x.com oauth-authorization-server returned HTTP 200 JSON: issuer https://api.x.com, authorization_endpoint https://x.com/i/oauth2/authorize, token_endpoint https://api.x.com/2/oauth2/token, code_challenge_methods_supported [\"S256\"], grant_types_supported [\"authorization_code\",\"refresh_token\"], token_endpoint_auth_methods_supported [\"none\",\"client_secret_basic\"], and a scopes_supported list without tweet.write. api.x.com openid-configuration returned 404. x.com openid-configuration returned HTTP 200 but with the generic HTML app shell, not JSON.",
+      "outcome": "confirmed",
+      "ranAt": "2026-10-19"
+    },
+    {
+      "id": "probe-token",
+      "kind": "token-endpoint",
+      "description": "How the token endpoint responds to an unknown client ID",
+      "request": "POST https://api.x.com/2/oauth2/token (application/x-www-form-urlencoded) with grant_type=authorization_code, a made-up code, client_id=placeholder-client-id, the Composio redirect_uri, and code_verifier=challenge",
+      "observed": "HTTP 400 with body {\"error\":\"invalid_client\",\"error_description\":\"Value passed for the client id was invalid.\"}",
+      "outcome": "confirmed",
+      "ranAt": "2026-10-19"
+    },
+    {
+      "id": "probe-console",
+      "kind": "dev-console-url",
+      "description": "Whether the Developer Console URL is real",
+      "request": "GET https://console.x.com/, compared with GET https://console.x.com/this-does-not-exist-xyz",
+      "observed": "The console returned HTTP 200 with page title \"Developer Console\". The made-up path returned HTTP 404 with an empty body.",
+      "outcome": "confirmed",
+      "ranAt": "2026-10-19"
+    },
+    {
+      "id": "probe-legacy-portal",
+      "kind": "dev-console-url",
+      "description": "Whether the old developer portal link that Composio's docs point to still resolves",
+      "request": "GET https://developer.x.com/en/portal/dashboard",
+      "observed": "HTTP 307 to https://www.twitter.com/login?redirect_after_login=https%3A%2F%2Fdeveloper.x.com%2Fen%2Fportal%2Fdashboard. We couldn't see whether it then forwards to console.x.com after sign-in.",
+      "outcome": "inconclusive",
+      "ranAt": "2026-10-19"
+    }
+  ]
+}
