@@ -18,6 +18,31 @@ export function formatDuration(d: Duration): string {
   return `${d.min} to ${d.max} ${many}`;
 }
 
+export type HandsOnFigure = { value: string; estimate: boolean; evidence: Evidence };
+
+export type WaitFigure = {
+  kind: "none" | "range" | "stated" | "unclear";
+  value: string;
+  label: string | null;
+  detail: string | null;
+  range: string | null;
+  evidence: Evidence;
+};
+
+export function timeFigures(guide: Guide): { handsOn: HandsOnFigure; wait: WaitFigure } {
+  const t = guide.summary.time;
+  const handsEv = t.handsOnEvidence ?? t.evidence;
+  const waitEv = t.approvalWaitEvidence ?? t.evidence;
+  const range = t.approvalWait ? formatDuration(t.approvalWait) : null;
+  const stated = t.approvalWaitStated;
+  let wait: WaitFigure;
+  if (waitEv.status !== "uncertain") wait = { kind: range ? "range" : "none", value: range ?? "None", label: null, detail: null, range, evidence: waitEv };
+  else if (stated)
+    wait = { kind: "stated", value: stated.value, label: stated.attribution, detail: stated.detail ?? (range ? `Range used: ${range}` : null), range, evidence: waitEv };
+  else wait = { kind: "unclear", value: "Unclear", label: null, detail: range ? `Unsourced estimate: ${range}` : "No source gives a timeline", range, evidence: waitEv };
+  return { handsOn: { value: formatDuration(t.handsOn), estimate: handsEv.status === "uncertain", evidence: handsEv }, wait };
+}
+
 const impactRank: Record<Requirement["impact"], number> = { blocker: 0, friction: 1, info: 2 };
 const appliesRank: Record<Requirement["applies"], number> = {
   required: 0,
@@ -65,7 +90,12 @@ export type ClaimRef = { section: string; label: string; evidence: Evidence };
 export function allClaims(guide: Guide): ClaimRef[] {
   const claims: ClaimRef[] = [
     { section: "Summary", label: "Difficulty", evidence: guide.summary.difficulty.evidence },
-    { section: "Summary", label: "Time estimate", evidence: guide.summary.time.evidence },
+    ...(guide.summary.time.handsOnEvidence && guide.summary.time.approvalWaitEvidence
+      ? [
+          { section: "Summary", label: "Hands-on time", evidence: guide.summary.time.handsOnEvidence },
+          { section: "Summary", label: "Approval wait", evidence: guide.summary.time.approvalWaitEvidence },
+        ]
+      : [{ section: "Summary", label: "Time estimate", evidence: guide.summary.time.evidence }]),
     { section: "Composio", label: "Composio setup", evidence: guide.composio.evidence },
   ];
   if (guide.appTypeChoice)
@@ -101,7 +131,10 @@ export type GuideCard = {
   difficulty: Guide["summary"]["difficulty"]["level"];
   reason: string;
   handsOn: string;
+  handsOnEstimate: boolean;
   wait: string;
+  waitKind: WaitFigure["kind"];
+  waitLabel: string | null;
   waitWeeks: number;
   flags: string[];
   origin: Guide["meta"]["origin"];
@@ -112,6 +145,7 @@ export type GuideCard = {
 
 export function toCard(guide: Guide, logo: string | null = null): GuideCard {
   const { applicable } = headlineRequirements(guide);
+  const time = timeFigures(guide);
   return {
     slug: guide.slug,
     name: guide.app.name,
@@ -119,8 +153,11 @@ export function toCard(guide: Guide, logo: string | null = null): GuideCard {
     category: guide.app.category,
     difficulty: guide.summary.difficulty.level,
     reason: guide.summary.difficulty.reason,
-    handsOn: formatDuration(guide.summary.time.handsOn),
-    wait: guide.summary.time.approvalWait ? formatDuration(guide.summary.time.approvalWait) : "None",
+    handsOn: time.handsOn.value,
+    handsOnEstimate: time.handsOn.estimate,
+    wait: time.wait.value,
+    waitKind: time.wait.kind,
+    waitLabel: time.wait.kind === "stated" ? time.wait.label : time.wait.kind === "unclear" && time.wait.range ? `est. ${time.wait.range}` : null,
     waitWeeks: guide.summary.time.approvalWait ? toMinutes(guide.summary.time.approvalWait, "max") / 10080 : 0,
     flags: applicable.filter((r) => r.impact !== "info").slice(0, 3).map((r) => r.title),
     origin: guide.meta.origin,

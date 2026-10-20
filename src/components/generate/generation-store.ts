@@ -67,7 +67,9 @@ export function createGenerationStore(onDone: (slug: string) => void) {
           }
           if (event.type === "unsupported") return end("unsupported", event);
           if (event.type === "error") return end("error", event);
-          set({ events: [...snapshot.events, event] });
+          const last = snapshot.events.at(-1);
+          const replace = (event.type === "writing" || event.type === "thinking") && last?.type === event.type;
+          set({ events: replace ? [...snapshot.events.slice(0, -1), event] : [...snapshot.events, event] });
         }
       }
       end("error", { type: "error", message: "The connection closed before the guide was finished. Try again." });

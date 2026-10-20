@@ -39,11 +39,15 @@ export function GuideRow({ card, maxWeeks }: { card: GuideCard; maxWeeks: number
         <Meter level={card.difficulty} />
         <span className="text-[14px]">{difficultyLabel[card.difficulty]}</span>
       </span>
-      <span className="hidden font-mono text-[13px] text-ink md:block">{card.handsOn}</span>
+      <span className="hidden font-mono md:block">
+        <span className="block text-[13px] text-ink">{card.handsOn}</span>
+        {card.handsOnEstimate && <span className="block text-[11px] text-ink/40">estimate</span>}
+      </span>
       <span className="hidden md:block">
-        <span className={`font-mono text-[13px] ${card.waitWeeks ? "text-warn" : "text-ok"}`}>{card.wait}</span>
+        <span className={`block font-mono text-[13px] ${card.waitKind === "unclear" ? "text-ink/45" : card.waitKind === "none" ? "text-ok" : "text-warn"}`}>{card.wait}</span>
+        {card.waitLabel && <span className="block truncate font-mono text-[11px] text-ink/40">{card.waitLabel}</span>}
         <span className="mt-1.5 block h-1 w-full bg-ink/[0.06]">
-          {waitPct > 0 && <span className="block h-full bg-warn" style={{ width: `${waitPct}%` }} />}
+          {waitPct > 0 && <span className={`block h-full ${card.waitKind === "range" ? "bg-warn" : "bg-warn/35"}`} style={{ width: `${waitPct}%` }} />}
         </span>
       </span>
       <span className={`hidden font-mono text-[13px] md:block ${card.managed === "yes" ? "text-ok" : card.managed === "no" ? "text-bad" : "text-ink/40"}`}>
@@ -57,8 +61,13 @@ export function GuideRow({ card, maxWeeks }: { card: GuideCard; maxWeeks: number
           <Meter level={card.difficulty} />
           {difficultyLabel[card.difficulty]}
         </span>
-        <span className="text-ink/60">{card.handsOn}</span>
-        <span className={card.waitWeeks ? "text-warn" : "text-ok"}>{card.waitWeeks ? `${card.wait} wait` : "No wait"}</span>
+        <span className="text-ink/60">
+          {card.handsOn}
+          {card.handsOnEstimate ? " · estimate" : ""}
+        </span>
+        <span className={card.waitKind === "unclear" ? "text-ink/50" : card.waitKind === "none" ? "text-ok" : "text-warn"}>
+          {card.waitKind === "none" ? "No wait" : card.waitKind === "unclear" ? "Wait unclear" : `${card.wait} wait${card.waitLabel ? ` · ${card.waitLabel}` : ""}`}
+        </span>
         {card.managed === "no" && <span className="text-bad">No managed app</span>}
       </span>
     </Link>

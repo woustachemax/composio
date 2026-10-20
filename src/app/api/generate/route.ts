@@ -124,7 +124,7 @@ export async function POST(request: Request) {
         } else if (result.kind === "unsupported") {
           send({ type: "unsupported", reason: result.reason, message: result.message, suggestions: result.suggestions });
         } else {
-          send({ type: "error", message: result.message });
+          send({ type: "error", message: result.message, ...(result.code ? { code: result.code } : {}) });
         }
       } catch (err) {
         console.error("generation failed", err);

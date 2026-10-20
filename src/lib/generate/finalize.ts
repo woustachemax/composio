@@ -28,7 +28,29 @@ type FinalizeInput = {
   today: string;
 };
 
-type FinalizeResult = { ok: true; guide: Guide; checks: string[] } | { ok: false; issues: string[] };
+export type FinalizeStats = { sourcesKept: number; sourcesDropped: number; claimsDowngraded: number };
+
+type FinalizeResult = { ok: true; guide: Guide; checks: string[]; stats: FinalizeStats } | { ok: false; issues: string[] };
+
+const NUMBER_WORD = /\d|\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a few|a couple)\b/i;
+
+function durationEvidence(ev: Evidence, hasRange: boolean, label: string): { evidence: Evidence; downgraded: boolean } {
+  if (ev.status === "uncertain") return { evidence: ev, downgraded: false };
+  if (ev.status === "tested") {
+    const reason = `Probes cannot measure how long ${label} takes, so this is an estimate.${ev.note ? ` Agent note: ${ev.note}` : ""}`;
+    return { evidence: { status: "uncertain", reason, sourceIds: ev.sourceIds }, downgraded: true };
+  }
+  if (!hasRange) return { evidence: ev, downgraded: false };
+  if (ev.quote && NUMBER_WORD.test(ev.quote)) return { evidence: ev, downgraded: false };
+  return {
+    evidence: {
+      status: "uncertain",
+      reason: `Marked documented, but no quoted passage from an opened source states how long ${label} takes, so the range is an estimate.${ev.note ? ` Agent note: ${ev.note}` : ""}`,
+      sourceIds: ev.sourceIds,
+    },
+    downgraded: true,
+  };
+}
 
 function formatIssues(error: z.ZodError): string[] {
   return error.issues.slice(0, 25).map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`);
@@ -39,6 +61,11 @@ export function finalizeSubmission({ submission, probes, fetchedUrls, today }: F
   if (!parsed.success) return { ok: false, issues: formatIssues(parsed.error) };
   const s = cleanTextDeep(parsed.data);
   const checks: string[] = [];
+  const missingTime = [
+    !s.summary.time.handsOnEvidence && "summary.time.handsOnEvidence: required. Give the hands-on range its own evidence.",
+    !s.summary.time.approvalWaitEvidence && "summary.time.approvalWaitEvidence: required. Give the approval wait its own evidence, including when approvalWait is null.",
+  ].filter((x): x is string => Boolean(x));
+  if (missingTime.length > 0) return { ok: false, issues: missingTime };
 
   const unopened = new Map<string, string>();
   const sources = s.sources.filter((src) => {
@@ -79,6 +106,44 @@ export function finalizeSubmission({ submission, probes, fetchedUrls, today }: F
     return { ...ev, sourceIds: keptSources };
   };
 
+  const handsOn = durationEvidence(fix(s.summary.time.handsOnEvidence!), true, "the hands-on work");
+  const approvalWait = durationEvidence(fix(s.summary.time.approvalWaitEvidence!), s.summary.time.approvalWait !== null, "provider approval");
+  const timeDowngrades = [handsOn, approvalWait].filter((x) => x.downgraded).length;
+  if (timeDowngrades > 0)
+    checks.push(`Marked ${timeDowngrades === 1 ? "a time estimate" : "both time estimates"} uncertain because no opened source quotes the duration.`);
+  let approvalWaitStated = s.summary.time.approvalWaitStated;
+  if (approvalWaitStated) {
+    const opened = approvalWaitStated.sourceIds.filter((id) => !unopened.has(id) && sources.some((src) => src.id === id));
+    if (opened.length === 0 || !NUMBER_WORD.test(approvalWaitStated.quote)) {
+      checks.push(`Dropped the stated approval wait "${approvalWaitStated.value}" because no opened source quotes that figure.`);
+      approvalWaitStated = undefined;
+    } else {
+      approvalWaitStated = { ...approvalWaitStated, sourceIds: opened };
+    }
+  }
+  let timeEvidence = fix(s.summary.time.evidence);
+  const weakest = [handsOn.evidence, approvalWait.evidence].find((e) => e.status === "uncertain");
+  if (weakest && timeEvidence.status !== "uncertain") timeEvidence = weakest;
+
+  let composio = { ...s.composio, callbackUrl: COMPOSIO_CALLBACK, evidence: fix(s.composio.evidence) };
+  const composioProbe = [...probes].reverse().find((p) => p.kind === "composio-toolkit" && p.outcome !== "inconclusive");
+  if (composioProbe) {
+    const managed = composioProbe.outcome === "confirmed" ? "yes" : "no";
+    if (composio.managedAuthAvailable !== managed)
+      checks.push(`Set Composio managed auth to "${managed}" from the live toolkit check; the agent said "${composio.managedAuthAvailable}".`);
+    const agentNote = composio.evidence.status === "uncertain" ? composio.evidence.reason : composio.evidence.note;
+    composio = {
+      ...composio,
+      managedAuthAvailable: managed,
+      evidence: {
+        status: "tested",
+        probeIds: [composioProbe.id],
+        sourceIds: composio.evidence.sourceIds,
+        note: [composioProbe.observed, agentNote].filter(Boolean).join(" "),
+      },
+    };
+  }
+
   const guide = {
     schemaVersion: 1 as const,
     slug: slugify(s.app.name) || "app",
@@ -87,9 +152,9 @@ export function finalizeSubmission({ submission, probes, fetchedUrls, today }: F
     summary: {
       verdict: s.summary.verdict,
       difficulty: { ...s.summary.difficulty, evidence: fix(s.summary.difficulty.evidence) },
-      time: { ...s.summary.time, evidence: fix(s.summary.time.evidence) },
+      time: { ...s.summary.time, evidence: timeEvidence, handsOnEvidence: handsOn.evidence, approvalWaitEvidence: approvalWait.evidence, approvalWaitStated },
     },
-    composio: { ...s.composio, callbackUrl: COMPOSIO_CALLBACK, evidence: fix(s.composio.evidence) },
+    composio,
     appTypeChoice: s.appTypeChoice ? { ...s.appTypeChoice, evidence: fix(s.appTypeChoice.evidence) } : undefined,
     requirements: s.requirements.map((r) => ({ ...r, evidence: fix(r.evidence) })),
     steps: s.steps.map((st) => ({ ...st, evidence: fix(st.evidence) })),
@@ -108,5 +173,10 @@ export function finalizeSubmission({ submission, probes, fetchedUrls, today }: F
   if (!final.success) return { ok: false, issues: formatIssues(final.error) };
   if (checks.length > 0)
     final.data.meta.researchNotes = `${final.data.meta.researchNotes} Automatic checks: ${checks.join(" ")}`;
-  return { ok: true, guide: final.data, checks };
+  return {
+    ok: true,
+    guide: final.data,
+    checks,
+    stats: { sourcesKept: sources.length, sourcesDropped: unopened.size, claimsDowngraded: downgradedDocumented + downgradedTested + timeDowngrades },
+  };
 }

@@ -307,3 +307,55 @@ export async function probeConsole(id: string, consoleUrl: string): Promise<Prob
     };
   }
 }
+
+const COMPOSIO_TOOLKIT_API = "https://backend.composio.dev/api/v3.1/toolkits";
+
+export function composioProbeEnabled() {
+  return Boolean(process.env.COMPOSIO_API_KEY?.trim());
+}
+
+export async function probeComposioToolkit(id: string, rawSlug: string): Promise<ProbeOutput> {
+  const slug = rawSlug.trim().toLowerCase();
+  const url = `${COMPOSIO_TOOLKIT_API}/${encodeURIComponent(slug)}`;
+  const request = `GET ${url} with a Composio API key, reading composio_managed_auth_schemes`;
+  const description = `Whether Composio offers a managed OAuth app for the ${slug} toolkit`;
+  const base = { id, kind: "composio-toolkit" as const, description, request, ranAt: today() };
+  const key = process.env.COMPOSIO_API_KEY?.trim();
+  if (!key)
+    return { data: { error: "COMPOSIO_API_KEY is not set" }, probe: { ...base, observed: "Not probed: no Composio API key on this server.", outcome: "inconclusive" } };
+  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(slug))
+    return { data: { error: "invalid slug" }, probe: { ...base, observed: "Not probed: the toolkit slug is not a valid Composio slug.", outcome: "inconclusive" } };
+  try {
+    const res = await fetch(url, {
+      headers: { "x-api-key": key, accept: "application/json", "user-agent": USER_AGENT },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    const body = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+    if (res.status === 404)
+      return {
+        data: { found: false, status: 404 },
+        probe: { ...base, observed: `HTTP 404. Composio has no toolkit with the slug "${slug}". Try the slug from the toolkit's docs.composio.dev URL.`, outcome: "inconclusive" },
+      };
+    if (!res.ok || !body)
+      return { data: { status: res.status }, probe: { ...base, observed: `HTTP ${res.status}. The toolkit API did not return a readable toolkit.`, outcome: "inconclusive" } };
+    const schemes = Array.isArray(body.composio_managed_auth_schemes) ? body.composio_managed_auth_schemes.filter((x): x is string => typeof x === "string") : null;
+    if (!schemes)
+      return { data: { status: res.status }, probe: { ...base, observed: "HTTP 200, but the response has no composio_managed_auth_schemes field.", outcome: "inconclusive" } };
+    const name = typeof body.name === "string" ? body.name : slug;
+    const authModes = Array.isArray(body.auth_config_details)
+      ? body.auth_config_details.map((d) => (d && typeof d === "object" && typeof (d as { mode?: unknown }).mode === "string" ? (d as { mode: string }).mode : null)).filter(Boolean)
+      : [];
+    const managed = schemes.some((s) => s.toUpperCase().startsWith("OAUTH"));
+    return {
+      data: { toolkit: name, slug, composio_managed_auth_schemes: schemes, auth_modes: authModes, managedOAuth: managed },
+      probe: {
+        ...base,
+        description: `Whether Composio offers a managed OAuth app for ${name}`,
+        observed: `HTTP 200. composio_managed_auth_schemes=${JSON.stringify(schemes)}. ${managed ? `Composio has a managed OAuth app for ${name}.` : `Composio has no managed OAuth app for ${name}, so developers bring their own.`}`,
+        outcome: managed ? "confirmed" : "refuted",
+      },
+    };
+  } catch (err) {
+    return { data: { error: errorMessage(err) }, probe: { ...base, observed: errorMessage(err), outcome: "inconclusive" } };
+  }
+}

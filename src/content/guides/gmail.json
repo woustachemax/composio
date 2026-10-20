@@ -31,6 +31,23 @@
         "status": "uncertain",
         "reason": "The 6-week lower bound is Google's FAQ estimate, which it says is \"not guaranteed and will vary based on developer responsiveness\". Google publishes no maximum. The 12-week upper bound is our reading of the Unverified apps page, which says verification \"might require several months\". The developer docs only say \"several weeks\". The hands-on range is an estimate from the documented forms; nobody timed it. CASA assessor turnaround is not documented.",
         "sourceIds": ["g-faq", "g-restricted", "g-unverified", "g-brand"]
+      },
+      "handsOnEvidence": {
+        "status": "uncertain",
+        "reason": "Estimate from the documented project, consent screen, and OAuth client forms plus Composio setup and a test connection. Nobody timed it. Production prep for verification adds more work.",
+        "sourceIds": ["g-clients", "g-brand"]
+      },
+      "approvalWaitEvidence": {
+        "status": "uncertain",
+        "reason": "The 6-week lower bound is Google's FAQ estimate, which it says is \"not guaranteed and will vary based on developer responsiveness\". Google publishes no maximum. The 12-week upper bound is our reading of the Unverified apps page, which says verification \"might require several months\". CASA assessor turnaround is not documented.",
+        "sourceIds": ["g-faq", "g-restricted", "g-unverified"]
+      },
+      "approvalWaitStated": {
+        "value": "About 6 weeks",
+        "attribution": "Google's estimate",
+        "detail": "Google says its estimates are not guaranteed. Range used: 6 to 12 weeks, with the upper bound inferred from \"might require several months\".",
+        "sourceIds": ["g-faq"],
+        "quote": "6 weeks"
       }
     }
   },

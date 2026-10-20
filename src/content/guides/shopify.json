@@ -49,6 +49,33 @@
           "forum-review-5-10",
           "forum-review-30"
         ]
+      },
+      "handsOnEvidence": {
+        "status": "uncertain",
+        "reason": "Estimate from the documented steps. Custom distribution is quick, and public distribution adds submission prep. Nobody timed a real setup or submission.",
+        "sourceIds": [
+          "shop-select-distribution",
+          "shop-app-store-reqs"
+        ]
+      },
+      "approvalWaitEvidence": {
+        "status": "uncertain",
+        "reason": "Shopify's review process page lists statuses but gives no timeline. The range comes from Shopify Community forum posts, not official docs.",
+        "sourceIds": [
+          "shop-review-process",
+          "forum-review-5-10",
+          "forum-review-30"
+        ]
+      },
+      "approvalWaitStated": {
+        "value": "About 30 days",
+        "attribution": "Shopify team, via forum",
+        "detail": "Relayed in a developer forum post. Another post reports 5 to 10 business days before the first review starts. Range used: 1 to 8 weeks.",
+        "sourceIds": [
+          "forum-review-30",
+          "forum-review-5-10"
+        ],
+        "quote": "It has also been mentioned by the Shopify team that its around ~30 days currently, not 2 weeks."
       }
     }
   },

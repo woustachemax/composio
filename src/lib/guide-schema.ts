@@ -14,7 +14,7 @@ export const SourceSchema = z.object({
 
 export const ProbeSchema = z.object({
   id,
-  kind: z.enum(["oidc-discovery", "authorize-endpoint", "token-endpoint", "dev-console-url", "other"]),
+  kind: z.enum(["oidc-discovery", "authorize-endpoint", "token-endpoint", "dev-console-url", "composio-toolkit", "other"]),
   description: z.string(),
   request: z.string(),
   observed: z.string(),
@@ -134,6 +134,17 @@ export const GuideBaseSchema = z.object({
       approvalWait: DurationSchema.nullable(),
       note: z.string(),
       evidence: EvidenceSchema,
+      handsOnEvidence: EvidenceSchema.optional(),
+      approvalWaitEvidence: EvidenceSchema.optional(),
+      approvalWaitStated: z
+        .object({
+          value: z.string().max(40, "approvalWaitStated.value must be the bare figure, like \"About 6 weeks\", at most 40 characters. Put the rest in detail."),
+          attribution: z.string().max(60),
+          detail: z.string().optional(),
+          sourceIds: z.array(id).min(1),
+          quote: z.string(),
+        })
+        .optional(),
     }),
   }),
   composio: z.object({
@@ -181,6 +192,10 @@ export const GuideSchema = GuideBaseSchema.superRefine((g, ctx) => {
   };
   check(g.summary.difficulty.evidence, ["summary", "difficulty"]);
   check(g.summary.time.evidence, ["summary", "time"]);
+  if (g.summary.time.handsOnEvidence) check(g.summary.time.handsOnEvidence, ["summary", "time", "handsOnEvidence"]);
+  if (g.summary.time.approvalWaitEvidence) check(g.summary.time.approvalWaitEvidence, ["summary", "time", "approvalWaitEvidence"]);
+  for (const s of g.summary.time.approvalWaitStated?.sourceIds ?? [])
+    if (!sourceIds.has(s)) ctx.addIssue({ code: "custom", message: `unknown source "${s}"`, path: ["summary", "time", "approvalWaitStated"] });
   check(g.composio.evidence, ["composio"]);
   if (g.appTypeChoice) check(g.appTypeChoice.evidence, ["appTypeChoice"]);
   g.requirements.forEach((r, i) => check(r.evidence, ["requirements", i]));

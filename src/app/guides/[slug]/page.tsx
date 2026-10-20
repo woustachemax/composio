@@ -15,7 +15,11 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/guides/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const guide = getLibraryGuide(slug);
+  let guide: Guide | null = getLibraryGuide(slug) ?? null;
+  if (!guide) {
+    await connection();
+    guide = await getGeneratedGuide(slug).catch(() => null);
+  }
   if (!guide) return { title: "No guide yet" };
   return {
     title: `${shortName(guide)} OAuth setup`,

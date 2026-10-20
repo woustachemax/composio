@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Guide, Requirement, Step } from "@/lib/guide-schema";
-import { difficultyLabel, evidenceCounts, formatDuration, shortName, headlineRequirements, phaseLabels, sortRequirements, stepsByPhase, uncertainClaims } from "@/lib/guide-view";
+import { difficultyLabel, evidenceCounts, formatDuration, shortName, headlineRequirements, phaseLabels, sortRequirements, stepsByPhase, timeFigures, uncertainClaims } from "@/lib/guide-view";
 import { EvidenceLegend, EvidenceTag } from "@/components/evidence";
 import { CopyButton } from "@/components/copy-button";
 import { AppLogo } from "@/components/app-logo";
@@ -48,9 +48,10 @@ function linkify(text: string) {
   );
 }
 
+
 function Header({ guide, logo }: { guide: Guide; logo: string | null }) {
   const counts = evidenceCounts(guide);
-  const { time } = guide.summary;
+  const { handsOn, wait } = timeFigures(guide);
   return (
     <section className="bg-ink text-white">
       <div className="mx-auto w-full max-w-[1240px] px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-10">
@@ -69,15 +70,16 @@ function Header({ guide, logo }: { guide: Guide; logo: string | null }) {
               </div>
             </div>
             <p className="mt-5 text-[22px] leading-snug tracking-[-0.02em] sm:text-[26px]">
-              {time.approvalWait ? (
-                <>
-                  <span className="hl">{formatDuration(time.approvalWait)}</span> approval wait. {formatDuration(time.handsOn)} <span className="whitespace-nowrap">hands-on.</span>
-                </>
+              {wait.kind === "unclear" ? (
+                <span className="hl">Approval wait unclear.</span>
+              ) : wait.kind === "none" ? (
+                <span className="hl">No approval wait.</span>
               ) : (
                 <>
-                  <span className="hl">No approval wait.</span> {formatDuration(time.handsOn)} <span className="whitespace-nowrap">hands-on.</span>
+                  <span className="hl">{wait.value}</span> approval wait.
                 </>
-              )}
+              )}{" "}
+              {handsOn.value} <span className="whitespace-nowrap">hands-on.</span>
             </p>
             <p className="mt-3 max-w-3xl text-[15.5px] leading-relaxed text-white/65">{guide.summary.verdict}</p>
           </div>
@@ -106,7 +108,8 @@ function Header({ guide, logo }: { guide: Guide; logo: string | null }) {
 }
 
 function StatsStrip({ guide }: { guide: Guide }) {
-  const { difficulty, time } = guide.summary;
+  const { difficulty } = guide.summary;
+  const { handsOn, wait } = timeFigures(guide);
   const managed = guide.composio.managedAuthAvailable;
   const cell = "border-line p-4 sm:p-5";
   return (
@@ -124,17 +127,22 @@ function StatsStrip({ guide }: { guide: Guide }) {
         </div>
         <div className={`${cell} border-b lg:border-r lg:border-b-0`}>
           <p className="label text-ink/50">Hands-on</p>
-          <p className="mt-2 text-[24px] leading-none tracking-[-0.025em]">{formatDuration(time.handsOn)}</p>
+          <p className="mt-2 text-[24px] leading-none tracking-[-0.025em]">{handsOn.value}</p>
+          {handsOn.estimate && <p className="mt-2 font-mono text-[11px] text-ink/45 uppercase">Estimate</p>}
           <div className="mt-3">
-            <EvidenceTag evidence={time.evidence} guide={guide} />
+            <EvidenceTag evidence={handsOn.evidence} guide={guide} />
           </div>
         </div>
         <div className={`${cell} border-r`}>
           <p className="label text-ink/50">Approval wait</p>
-          <p className={`mt-2 text-[24px] leading-none tracking-[-0.025em] ${time.approvalWait ? "text-warn" : "text-ok"}`}>
-            {time.approvalWait ? formatDuration(time.approvalWait) : "None"}
+          <p className={`mt-2 text-[24px] leading-none tracking-[-0.025em] ${wait.kind === "unclear" ? "text-ink/50" : wait.kind === "none" ? "text-ok" : "text-warn"}`}>{wait.value}</p>
+          <p className="mt-2 font-mono text-[11px] text-ink/45 uppercase">
+            {wait.kind === "stated" ? wait.label : wait.kind === "range" ? "Provider review" : wait.kind === "none" ? "No review queue" : wait.detail}
           </p>
-          <p className="mt-3 font-mono text-[11px] text-ink/40 uppercase">{time.approvalWait ? "Provider review" : "No review queue"}</p>
+          {wait.kind === "stated" && wait.detail && <p className="mt-1 text-[12.5px] leading-snug text-ink/55">{wait.detail}</p>}
+          <div className="mt-3">
+            <EvidenceTag evidence={wait.evidence} guide={guide} />
+          </div>
         </div>
         <div className={cell}>
           <p className="label text-ink/50">Composio managed app</p>

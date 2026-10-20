@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { GenerationEvent } from "@/lib/generate/events";
 import { createGenerationStore } from "./generation-store";
-import { Pipeline, pipelineState } from "./pipeline";
+import { activityLine, Pipeline, pipelineState } from "./pipeline";
 import { APP_INPUT_MAX, validateAppInput } from "@/lib/app-input";
 import { RUNS_PER_HOUR } from "@/lib/rate-limit";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -33,14 +33,25 @@ function EventRow({ event }: { event: GenerationEvent }) {
     case "note":
       return <Row tag="NOTE" tone="text-white/30"><span className="font-sans text-white/50">{event.text}</span></Row>;
     case "search":
-      return <Row tag="SEARCH" tone="text-brand-light">“{event.query}”</Row>;
+      return (
+        <Row tag="SEARCH" tone="text-brand-light">
+          “{event.query}”{event.repeat && <span className="ml-2 text-[11px] text-[#facc15] uppercase">repeat</span>}
+        </Row>
+      );
     case "fetch":
-      return <Row tag="OPEN" tone="text-brand-light"><span className="break-all text-white/60">{hostOf(event.url)}</span></Row>;
+      return (
+        <Row tag="OPEN" tone="text-brand-light">
+          <span className="break-all text-white/60">{hostOf(event.url)}</span>
+          {event.repeat && <span className="ml-2 text-[11px] text-[#facc15] uppercase">already opened</span>}
+        </Row>
+      );
     case "fetched":
       return event.ok ? (
         <Row tag="READ" tone="text-brand-light"><span className="font-sans text-white">{event.title || hostOf(event.url)}</span></Row>
       ) : (
-        <Row tag="FAIL" tone="text-white/30"><span className="text-white/40">Page could not be fetched</span></Row>
+        <Row tag="FAIL" tone="text-white/30">
+          <span className="text-white/40">{event.url ? <>Could not fetch <span className="break-all">{hostOf(event.url)}</span></> : "Page could not be fetched"}</span>
+        </Row>
       );
     case "probe": {
       const tone = event.probe.outcome === "confirmed" ? "text-[#4ade80]" : event.probe.outcome === "refuted" ? "text-[#f87171]" : "text-white/40";
@@ -51,6 +62,33 @@ function EventRow({ event }: { event: GenerationEvent }) {
         </Row>
       );
     }
+    case "thinking":
+      return (
+        <Row tag="THINK" tone="text-white/50">
+          <span className="font-sans text-white/80">
+            {event.phase === "planning" ? "Planning the guide" : "Thinking"} <span className="font-mono text-[11px] text-white/40 tabular-nums">{event.seconds}s</span>
+          </span>
+          {event.update && <span className="mt-0.5 block font-sans text-white/50">{event.update}</span>}
+        </Row>
+      );
+    case "writing":
+      return (
+        <Row tag="WRITE" tone="text-lime">
+          <span className="font-sans text-white/80">Writing the guide{event.section ? `, now on ${event.section}` : ""}</span>
+          <span className="mt-0.5 block text-[11px] text-white/40 tabular-nums">
+            {event.chars.toLocaleString("en-US")} characters · {event.sectionsStarted} of {event.sectionsTotal} sections started
+          </span>
+        </Row>
+      );
+    case "checked":
+      return (
+        <Row tag="CHECK" tone="text-[#facc15]">
+          <span className="font-sans text-white/80">
+            Citations checked: {event.sourcesKept} {event.sourcesKept === 1 ? "source" : "sources"} kept, {event.sourcesDropped} dropped, {event.claimsDowngraded}{" "}
+            {event.claimsDowngraded === 1 ? "claim" : "claims"} downgraded
+          </span>
+        </Row>
+      );
     case "submit":
       return <Row tag="SUBMIT" tone="text-lime">Draft submitted{event.attempt > 1 ? ` (attempt ${event.attempt})` : ""}</Row>;
     case "invalid":
@@ -108,6 +146,7 @@ function Runner({ app }: { app: string }) {
 
   const elapsed = startedAt ? Math.max(0, Math.floor(((endedAt ?? (now || startedAt)) - startedAt) / 1000)) : 0;
   const { states, notes } = pipelineState(events, status, final);
+  const activity = status === "running" ? activityLine(events) : null;
   const statusLabel = status === "running" ? "Running" : status === "done" ? "Done" : status === "unsupported" ? "No guide" : status === "error" ? "Stopped" : "Idle";
 
   return (
@@ -179,6 +218,15 @@ function Runner({ app }: { app: string }) {
               </span>
             </div>
             <Pipeline states={states} notes={notes} />
+            {activity && (
+              <p aria-live="polite" className="mt-4 flex min-h-[1.5rem] flex-wrap items-baseline gap-x-3 gap-y-1 text-[14px]">
+                <span className="flex items-center gap-2 font-mono text-[12px] text-white/70 uppercase">
+                  <span className="h-1.5 w-1.5 bg-lime anim-pulse" />
+                  {activity.title}
+                </span>
+                {activity.detail && <span className="min-w-0 truncate text-white/45">{activity.detail}</span>}
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -237,7 +285,20 @@ function Runner({ app }: { app: string }) {
           </div>
         )}
 
-        {final?.type === "error" && final.code !== "rate_limited" && (
+        {final?.type === "error" && final.code === "timeout" && (
+          <div className="mb-6 border border-warn bg-sand p-5">
+            <p className="label text-warn">Took too long</p>
+            <p className="mt-2 text-[20px] tracking-[-0.01em] text-ink">This run hit the time limit before the guide was finished</p>
+            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-ink/75">{final.message}</p>
+            {target && (
+              <button type="button" onClick={() => run(target, true)} className="btn btn-dark mt-4">
+                Try again
+              </button>
+            )}
+          </div>
+        )}
+
+        {final?.type === "error" && final.code !== "rate_limited" && final.code !== "timeout" && (
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border border-bad bg-white px-4 py-4">
             <p className="text-[15px] text-ink">{final.message}</p>
             {target && final.code !== "invalid_input" && (

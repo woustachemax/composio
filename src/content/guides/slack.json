@@ -47,6 +47,29 @@
           "slack-quickstart",
           "slack-review-guide"
         ]
+      },
+      "handsOnEvidence": {
+        "status": "uncertain",
+        "reason": "Estimate from the documented settings pages plus Composio setup and a test install. Nobody timed it.",
+        "sourceIds": [
+          "slack-quickstart"
+        ]
+      },
+      "approvalWaitEvidence": {
+        "status": "uncertain",
+        "reason": "The upper bound adds Slack's documented maximums (10 business days plus 10 weeks). The lower bound is a guess, since Slack documents only maximums. Time to reach 10 active workspaces is not included.",
+        "sourceIds": [
+          "slack-review-guide"
+        ]
+      },
+      "approvalWaitStated": {
+        "value": "Up to 10 weeks",
+        "attribution": "Slack's stated maximum",
+        "detail": "For the functional review of a new submission, after a preliminary review of up to 10 business days. Range used: 2 to 12 weeks, with a guessed lower bound.",
+        "sourceIds": [
+          "slack-review-guide"
+        ],
+        "quote": "Currently, the preliminary part of the review takes up to 10 business days to receive feedback, while the functional review takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes."
       }
     }
   },

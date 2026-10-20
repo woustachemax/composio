@@ -40,6 +40,21 @@
           "gh-create",
           "gh-org-restrictions"
         ]
+      },
+      "handsOnEvidence": {
+        "status": "uncertain",
+        "reason": "Estimate from the length of the documented registration form plus Composio configuration and a test connection. Nobody timed a real registration.",
+        "sourceIds": [
+          "gh-create"
+        ]
+      },
+      "approvalWaitEvidence": {
+        "status": "documented",
+        "sourceIds": [
+          "gh-create",
+          "gh-org-restrictions"
+        ],
+        "note": "GitHub's registration docs describe no provider review before an OAuth app can be used. Organization owners may still need to approve the app before it sees private org data, and that wait is on your users' side."
       }
     }
   },

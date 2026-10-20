@@ -10,7 +10,8 @@
     "validate": "tsx scripts/validate-guides.ts",
     "check-quotes": "tsx scripts/check-quotes.ts",
     "test": "tsx scripts/test-finalize.ts && tsx scripts/test-generate-input.ts",
-    "reprobe": "tsx scripts/reprobe.ts"
+    "reprobe": "tsx scripts/reprobe.ts",
+    "reprobe:composio": "tsx scripts/reprobe-composio.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

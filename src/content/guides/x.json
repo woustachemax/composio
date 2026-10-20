@@ -31,6 +31,16 @@
         "status": "uncertain",
         "reason": "The hands-on range is an estimate from the documented signup, app, billing, and OAuth settings steps plus Composio setup and a test connection. Nobody timed a real registration. The Developer Policy says X reviews all proposed uses, but the current getting-access page shows no wait, so we could not confirm whether a review delays new accounts.",
         "sourceIds": ["x-getting-access", "x-dev-policy", "x-dev-guidelines"]
+      },
+      "handsOnEvidence": {
+        "status": "uncertain",
+        "reason": "Estimate from the documented signup, app, billing, and OAuth settings steps plus Composio setup and a test connection. Nobody timed a real registration.",
+        "sourceIds": ["x-getting-access", "x-dev-apps"]
+      },
+      "approvalWaitEvidence": {
+        "status": "uncertain",
+        "reason": "The Developer Policy says X reviews all proposed uses, but the current getting-access page shows no wait, so we could not confirm whether a review delays new accounts. Approval for AI-generated replies has no published turnaround.",
+        "sourceIds": ["x-getting-access", "x-dev-policy"]
       }
     }
   },

@@ -1,5 +1,5 @@
 import type { Guide, Requirement } from "@/lib/guide-schema";
-import { formatDuration, phaseLabels, shortName } from "@/lib/guide-view";
+import { formatDuration, phaseLabels, shortName, timeFigures } from "@/lib/guide-view";
 import { Reveal } from "@/components/reveal";
 import { TimelineHover } from "./timeline-hover";
 import { buildTimeline, formatMinutes, type Lane, type Timeline, type TimelineSeg } from "@/lib/timeline";
@@ -66,6 +66,7 @@ function Overview({ guide, t, width, prefix, stacked = false }: { guide: Guide; 
   const o = t.overview;
   if (!o) return null;
   const wait = guide.summary.time.approvalWait;
+  const figures = timeFigures(guide);
   const handsW = Math.max(3, o.handsOnEnd * width);
   const minEnd = o.waitMinEnd * width;
   const pct = o.handsOnShare * 100;
@@ -79,11 +80,15 @@ function Overview({ guide, t, width, prefix, stacked = false }: { guide: Guide; 
       </g>
       <path d="M 0 33 L 4 25 L 8 33 Z" fill={INK} />
       <text x={13} y={34} fontSize={11} fontFamily="var(--font-mono)" fill={INK}>
-        {formatDuration(guide.summary.time.handsOn)} hands-on · {share} of the calendar
+        {figures.handsOn.value} hands-on{figures.handsOn.estimate ? " (estimate)" : ""} · {share} of the calendar
       </text>
       <path d={`M ${width - 8} ${(stacked ? 50 : 34) - 1} L ${width - 4} ${(stacked ? 50 : 34) - 9} L ${width} ${(stacked ? 50 : 34) - 1} Z`} fill={WARN} />
       <text x={width - 13} y={stacked ? 50 : 34} fontSize={11} fontFamily="var(--font-mono)" fill={WARN} textAnchor="end">
-        {wait ? formatDuration(wait) : ""} waiting on approval
+        {figures.wait.kind === "stated"
+          ? `${figures.wait.value} waiting on approval (${figures.wait.label})`
+          : figures.wait.kind === "unclear"
+            ? `approval wait unclear${wait ? `, est. ${formatDuration(wait)}` : ""}`
+            : `${wait ? formatDuration(wait) : ""} waiting on approval`}
       </text>
     </g>
   );

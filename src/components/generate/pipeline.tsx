@@ -7,8 +7,8 @@ export const stages = [
   { key: "find", label: "Find app", sub: "Web search" },
   { key: "docs", label: "Read docs", sub: "Official pages" },
   { key: "probes", label: "Run probes", sub: "Live GET checks" },
-  { key: "citations", label: "Check citations", sub: "Server-side" },
-  { key: "write", label: "Write guide", sub: "Validate + save" },
+  { key: "write", label: "Write guide", sub: "Draft sections" },
+  { key: "citations", label: "Check citations", sub: "Validate + save" },
 ] as const;
 
 const stageOf: Partial<Record<GenerationEvent["type"], number>> = {
@@ -17,22 +17,51 @@ const stageOf: Partial<Record<GenerationEvent["type"], number>> = {
   fetch: 1,
   fetched: 1,
   probe: 2,
-  submit: 3,
+  writing: 3,
   invalid: 3,
-  check: 3,
+  submit: 4,
+  check: 4,
+  checked: 4,
 };
+
+function kilo(n: number) {
+  return n < 1000 ? `${n}` : `${(n / 1000).toFixed(1)}k`;
+}
+
+function stageFor(e: GenerationEvent) {
+  if (e.type === "thinking") return e.phase === "planning" ? 3 : undefined;
+  return stageOf[e.type];
+}
+
+export function activityLine(events: GenerationEvent[]) {
+  for (let i = events.length - 1; i >= 0; i--) {
+    const e = events[i];
+    if (e.type === "thinking")
+      return { title: `${e.phase === "planning" ? "Planning the guide" : "Researching"} · ${e.seconds}s`, detail: e.update };
+    if (e.type === "writing") return { title: `Writing the guide${e.section ? `, now on ${e.section}` : ""}`, detail: `${e.chars.toLocaleString("en-US")} characters` };
+    if (e.type === "submit" || e.type === "checked" || e.type === "check") return { title: "Checking citations and saving", detail: null };
+    if (e.type === "probe") return { title: "Running probes", detail: e.probe.description };
+    if (e.type === "fetch") return { title: "Reading docs", detail: e.url };
+    if (e.type === "search") return { title: "Searching", detail: e.query };
+  }
+  return null;
+}
 
 export function pipelineState(events: GenerationEvent[], status: Status, final: GenerationEvent | null) {
   let reached = -1;
-  for (const e of events) reached = Math.max(reached, stageOf[e.type] ?? -1);
+  for (const e of events) {
+    const stage = stageFor(e);
+    if (stage === undefined) continue;
+    reached = e.type === "invalid" ? stage : Math.max(reached, stage);
+  }
   if (status === "running") reached = Math.max(reached, 0);
-  const counts = [
-    events.filter((e) => e.type === "search").length,
-    events.filter((e) => e.type === "fetched" && e.ok).length,
-    events.filter((e) => e.type === "probe").length,
-    events.filter((e) => e.type === "submit").length,
-    final?.type === "done" ? 1 : 0,
-  ];
+  const writing = events.findLast((e) => e.type === "writing");
+  const lastStaged = events.findLast((e) => stageFor(e) !== undefined);
+  const checked = events.findLast((e) => e.type === "checked");
+  const submits = events.filter((e) => e.type === "submit").length;
+  const searches = events.filter((e) => e.type === "search").length;
+  const pages = events.filter((e) => e.type === "fetched" && e.ok).length;
+  const probes = events.filter((e) => e.type === "probe").length;
   const skipped = final?.type === "done" && final.source !== "generated";
   const states: StageState[] = stages.map((_, i) => {
     if (skipped) return "skipped";
@@ -41,12 +70,29 @@ export function pipelineState(events: GenerationEvent[], status: Status, final: 
     if (status === "running") return i < reached ? "done" : i === reached ? "active" : "pending";
     return "pending";
   });
+  const writeNote =
+    lastStaged?.type === "thinking" && status === "running"
+      ? `planning · ${lastStaged.seconds}s`
+      : writing
+        ? status === "running" && reached === 3
+          ? `${kilo(writing.chars)} chars · ${writing.section ?? "starting"}`
+          : `${kilo(writing.chars)} chars written`
+        : "waiting";
+  const citeNote = checked
+    ? checked.sourcesDropped > 0
+      ? `${checked.sourcesKept} kept · ${checked.sourcesDropped} dropped`
+      : `${checked.sourcesKept} sources kept`
+    : reached === 4
+      ? submits > 1
+        ? `checking try ${submits}`
+        : "checking"
+      : "waiting";
   const notes = [
-    `${counts[0]} ${counts[0] === 1 ? "search" : "searches"}`,
-    `${counts[1]} ${counts[1] === 1 ? "page" : "pages"}`,
-    `${counts[2]} ${counts[2] === 1 ? "probe" : "probes"}`,
-    counts[3] > 1 ? `${counts[3]} tries` : counts[3] === 1 ? "1 try" : "waiting",
-    counts[4] ? "saved" : "waiting",
+    `${searches} ${searches === 1 ? "search" : "searches"}`,
+    `${pages} ${pages === 1 ? "page" : "pages"}`,
+    `${probes} ${probes === 1 ? "probe" : "probes"}`,
+    writeNote,
+    citeNote,
   ];
   return { states, notes };
 }
