@@ -1,61 +1,48 @@
 # OAuth Guides
 
-Live app at:
-and a walkthrough video at: .
+Live app at:https://composio-indol.vercel.app/ . Walkthrough at: https://www.loom.com/share/8ec6c325d3fa41a386019f4f55071c7e.
 
-A developer building an agent on Composio wants their users to connect an app. Sometimes Composio already has a managed OAuth app for it and they can start right away. Other times they need their own, because Composio doesn't manage that provider, or they want their own name on the consent screen, their own scopes, or their own rate limit. That's when the trouble starts. Registering an OAuth app can take ten minutes or three months, and you usually find out which one by hitting the wall yourself.
+You look up an app and get a guide to registering your own OAuth app with that provider and getting it approved. The top of each guide shows the difficulty, the hands-on time, the approval wait and whether Composio already manages the app. If the app isn't in the library, an agent researches it live and writes a shareable guide.
 
-This app tries to answer that before you start. You look up an app and get a guide that tells you how hard it is, how long the hands-on part takes, how long you'll wait on the provider, what could block you, and which steps an agent can handle for you. If the app isn't in the library, you type its name and an agent researches it live and writes a new guide you can share.
+## The problem
 
-## How I understood the problem
+A developer registers an OAuth app with the provider once. On Composio, an auth config holds its client ID and secret, and each end user gets their own connection through consent. Composio manages the OAuth app for many providers. Developers bring their own when Composio doesn't manage one, or when they want their own name on the consent screen.
 
-The thing that took me a minute to get straight was that there are three separate pieces. There's the OAuth app, which is registered once with the provider and holds a client ID and secret. There's the developer's integration, which on Composio is an auth config pointing at that OAuth app. And there's each end user's connection, which is a token their consent produces. With Composio managed auth, Composio owns the OAuth app and the user sees "Composio wants access". With your own app, you own it and the user sees your name. The home page diagram has a toggle that shows both flows, because that consent screen difference is most of the reason people bring their own app.
+Registration is where they lose time. GitHub takes minutes. Gmail needs a verified domain, a demo video and a yearly paid security assessment. The docs rarely say which kind of provider you're dealing with.
 
-The hard part for developers isn't the OAuth flow itself. It's everything around registration. Google wants a verified domain, a privacy policy, a demo video and a paid security assessment for most Gmail scopes. Shopify makes you pick a distribution method you can never change. X charges per API call. None of this is in one place, and most of it isn't on the first docs page you open.
+## What I built
 
-## What I chose to build
+Five hand-built guides, picked for the different ways they slow you down. GitHub has no review. Gmail has restricted scopes and CASA. Slack has a marketplace review for commercial apps. X bills every call. Shopify has no Composio managed app and a distribution choice you can't undo.
 
-I kept the scope to one question. Can a developer read the top of a guide and know whether this is an afternoon or a quarter? Every guide puts difficulty, hands-on time, approval wait and whether Composio already manages the app above the fold. Steps, blockers, requirements and sources come after.
+Each guide draws the setup on a timeline to scale, so a six week review visibly dwarfs thirty minutes of work.
 
-For the library I picked five apps that fail in different ways rather than five popular ones. GitHub is the easy baseline with no review at all. Gmail is the hard case with restricted scopes and a security assessment. Slack has a marketplace review that only matters if you go commercial. X is quick to register but you pay for every call. Shopify has no Composio managed app, a distribution choice you can't undo, and app store rules that clash with Composio's connect flow. I originally planned LinkedIn instead of Shopify, but Shopify teaches more because it's a case where a developer has no choice but to bring their own app.
+## Evidence
 
-Each guide also has a setup timeline drawn to scale. The point is to make the wait visible. Gmail's hands-on time is under one percent of the calendar, and the picture says that faster than a sentence does.
+Every claim is tagged tested, documented or uncertain. Tested means a live probe. Documented means a linked source with a quote. Uncertain says why.
 
-## How the evidence works
+The server enforces this. It drops citations to pages the agent never opened. A time figure needs a quoted source. Hands-on time is always labelled an estimate. Approval wait shows a number only when a source gives one, and says whose figure it is. The /verification page lists what I re-checked and what I fixed.
 
-Every claim in a guide is tagged as tested, documented or uncertain. Tested means an agent ran a live probe against the provider. Documented means a linked source states it, usually with a short quote. Uncertain means it's inferred or I couldn't confirm it, and the guide says why.
+## The agent
 
-I didn't want the agent to be able to fake this, so the server checks its work before saving. It drops any citation pointing at a page the agent never opened and downgrades the claims that relied on it. A duration only counts as documented if an opened source is quoted stating it, and a probe can never count as evidence for a time estimate. Hands-on time is always shown as an estimate, since nobody times a registration. Approval wait only shows a number when a source gives one, and the card says whose figure it is, like "About 6 weeks, Google's estimate". Otherwise it says the wait is unclear.
+It searches the provider's docs, reads them, then runs GET-only probes against the authorize endpoint, the OIDC discovery URL and the developer console. It also calls Composio's toolkit API to check managed auth, and the server trusts that over the agent's reading. The guide must pass the same checks as the hand-built ones. Progress streams to the page. If the app doesn't exist or has no OAuth, it stops and says so.
 
-The /verification page is the audit trail. It shows how many quotes were found word for word on the live pages, how many cited links resolve, which probes changed when I re-ran them, and what I corrected along the way.
+## What I learned
 
-## What the agent does
+GitHub's docs name one error for bad credentials. My probe got a 404. The guide lists both.
 
-When you submit an app, the agent searches for the provider's developer docs, reads them, and then runs safe probes. These are GET requests only and refuse private addresses. It checks whether the authorize endpoint is live, whether the provider publishes OIDC metadata, and whether the developer console URL behaves differently from a made-up path next to it. It also calls Composio's toolkit API to check whether Composio manages that app, and that result overrides whatever the agent concluded from reading. Then it writes a guide that has to pass the same schema and evidence rules as the hand-built ones. Progress streams to the page the whole time, so you can watch each search, page and probe as it happens.
+Composio's managed auth list renders in the browser, so the agent saw nothing and marked Calendly unknown. I then moved to Composio's API, which confirmed Calendly is managed.
 
-If the app doesn't exist, is ambiguous, has no OAuth, or has no public docs, it stops and says so instead of writing something.
+My first honesty fix went too far and turned every hands-on time into "unclear". However, hands-on time is always an estimate, so I labelled it as one and kept "unclear" for approval waits with no source.
 
-## What I learned and corrected
+The agent refetched the same page up to four times because each turn lost its tool session. Reusing the session cut fetches from sixteen to eight.
 
-A few things surprised me and changed the guidance.
+Runs had three silent minutes while the model planned. The page now streams thinking and writing progress. A run takes two to three minutes.
 
-GitHub's docs say bad client credentials return one error, but my probe got a plain 404 instead. The guide now lists both. A signed-out probe also can't tell a real client ID from a fake one, because both redirect to sign-in, so the end-to-end test became a step the developer does themselves.
+## Building it
 
-Composio's managed auth page lists which toolkits are managed, but that list is rendered in the browser, so a fetch only sees "Loading toolkits". The agent kept saying "unknown" for Calendly. The fix was to ask Composio's API directly, which returned that Calendly is managed. That's now a tested probe on every guide.
+I used Claude Code. Four research agents wrote the Slack, Gmail, X and Shopify guides in parallel. I tested in a real browser and fed fixes back. BUILD_LOG.md has the decisions in order. DESIGN.md has the tokens taken from composio.dev.
 
-My first pass at honest headlines went too far. Notion's guide showed "0 to 2 weeks approval wait" in big letters while admitting further down that it was a placeholder, so I made uncertain numbers say "unclear". That turned every hands-on time in the library into "unclear", which removed the one thing developers came for. I then moved to labelling estimates as estimates and only hiding approval waits that no source states.
-
-The agent was also fetching the same page up to four times per run, which burned its whole budget and left real questions unanswered. The cause was that each turn started a fresh tool session and lost what it had already read. Reusing the session cut a Dropbox run from 16 fetches to 8 with no repeats.
-
-Live runs had about three minutes of a frozen screen while the model planned the guide, which would have looked broken on a call and would have hit the hosting time limit. The page now streams thinking updates and writing progress, and a typical run finishes in two to three minutes.
-
-## How I used agents to build it
-
-I built this with Claude Code. Four research agents wrote the Slack, Gmail, X and Shopify guides in parallel and the main session checked their work against the sources. I then tested the app in a real browser with Claude and fed what I saw back in, which is where most of the corrections above came from. BUILD_LOG.md has the decisions and fixes in the order they happened, and DESIGN.md has the design tokens I pulled from composio.dev so the app would feel like it belongs next to it.
-
-## Running it locally
-
-You need Node 20 or later.
+## Running locally
 
 ```
 git clone [REPO_LINK]
@@ -65,14 +52,14 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Then fill in `.env.local`. `ANTHROPIC_API_KEY` is needed for live generation, and the key has to belong to a workspace in the Claude Console. `COMPOSIO_API_KEY` is a project key from the Composio platform dashboard, and it only needs read access to toolkits. `BLOB_READ_WRITE_TOKEN` is only needed on Vercel so generated guides survive across server instances. Without the Anthropic key the library still works and the generate page tells you it isn't configured.
+`ANTHROPIC_API_KEY` must belong to a Claude Console workspace. `COMPOSIO_API_KEY` is a Composio project key with read access to toolkits. `BLOB_READ_WRITE_TOKEN` is only needed on Vercel. The library works without any keys.
 
-`npm run validate` checks every guide against the schema and evidence rules, `npm test` runs the tests, and `npm run reprobe:composio` re-checks Composio managed auth for every guide without calling the model.
+`npm run validate` checks every guide. `npm test` runs the tests. `npm run reprobe:composio` re-checks managed auth without calling the model.
 
 ## Limitations
 
-I didn't register a real OAuth app with any provider or go through an approval, so every hands-on time is an estimate and every approval wait comes from the provider or from developer reports. Probes are unauthenticated, so they prove an endpoint exists, not that your app will work. Guides generated live are not reviewed by a person, and the page says so. A live run costs roughly 50 cents to a dollar on Opus. Sonnet was twice as fast and a third of the cost in my test, but its Dropbox guide was noticeably thinner, so I kept Opus. The rate limit is five runs per IP per hour and lives in memory, so on Vercel it's approximate. The library has five hand-built guides plus whatever has been generated, not a hundred.
+I didn't register a real app or go through an approval, so hands-on times are estimates. Probes run signed out, so they prove an endpoint exists, not that your app works. Live guides aren't reviewed by a person and say so. A run costs fifty cents to a dollar on Opus. Sonnet was faster and cheaper but thinner, so I kept Opus. The rate limit is five runs per IP per hour, held in memory, so it's approximate on Vercel.
 
-## What I'd do next
+## Next
 
-To get to a hundred guides, I'd batch generate them and put each one through a short human review before it joins the library. I'd run the reprobe scripts on a schedule so a guide flags itself when a provider changes something. And I'd collect real approval times from developers who use the guides, since that's the number everyone wants and the one providers publish least.
+Batch generate the remaining guides with a human review step. Re-probe on a schedule to catch provider changes. Collect real approval times from developers, since providers publish that number least.
